@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Viaje · Los Tresmiles de Iñaki</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="./styles.css">
+  <link rel="stylesheet" href="./cumbres.css">
+  <link rel="stylesheet" href="./viajes.css">
+</head>
+<body class="inner-page trip-detail-page">
+  <header class="site-header">
+    <a class="brand" href="index.html">
+      <span class="brand-logo" aria-hidden="true">
+        <svg viewBox="0 0 64 42"><path d="M3 37 20 9l10 16 8-12 23 24H3Z" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linejoin="round"/></svg>
+      </span>
+      <span>Los Tresmiles de Iñaki</span>
+    </a>
+    <nav>
+      <a href="index.html">Inicio</a>
+      <a href="index.html#mapa">Mapa</a>
+      <a class="active" href="viajes.html">Viajes</a>
+      <a href="cumbres.html">Cumbres</a>
+    </nav>
+  </header>
+
+  <main id="trip-detail">
+    <section class="detail-loading shell"><p>Cargando el viaje…</p></section>
+  </main>
+
+  <footer class="site-footer shell">
+    <a href="viajes.html">← Volver a todos los viajes</a>
+  </footer>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script type="module" src="./viaje.js"></script>
+  <script src="./site-nav.js"></script>
+</body>
+</html>

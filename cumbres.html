@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Archivo de cumbres de Los Tresmiles de Iñaki.">
+  <title>Cumbres · Los Tresmiles de Iñaki</title>
+  <link rel="stylesheet" href="./styles.css">
+  <link rel="stylesheet" href="./cumbres.css">
+</head>
+<body class="inner-page">
+  <header class="site-header">
+    <a class="brand" href="index.html" aria-label="Ir al inicio">
+      <span class="brand-logo" aria-hidden="true">
+        <svg viewBox="0 0 64 42">
+          <path d="M3 37 20 9l10 16 8-12 23 24H3Z" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linejoin="round"/>
+          <path d="m15 25 5-7 5 8m9-5 4-5 6 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+        </svg>
+      </span>
+      <span>Los Tresmiles de Iñaki</span>
+    </a>
+    <nav aria-label="Navegación principal">
+      <a href="index.html">Inicio</a>
+      <a href="index.html#estadisticas">Progreso</a>
+      <a href="index.html#mapa">Mapa</a>
+      <a href="viajes.html">Viajes</a>
+      <a class="active" href="cumbres.html">Cumbres</a>
+      <a href="index.html#mapa">Personas</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="archive-hero">
+      <div class="shell">
+        <nav class="breadcrumbs" aria-label="Migas de pan">
+          <a href="index.html">Inicio</a><span>/</span><span>Cumbres</span>
+        </nav>
+        <p class="eyebrow">Archivo de montañas</p>
+        <h1>Las cumbres</h1>
+        <p id="archive-summary" class="archive-summary">Cargando el archivo…</p>
+      </div>
+    </section>
+
+    <section class="archive-section shell">
+      <div class="archive-toolbar">
+        <label class="archive-search">
+          <span>Buscar una cumbre</span>
+          <input id="summit-search" type="search" placeholder="Aneto, Maladeta, Francia…" autocomplete="off">
+        </label>
+
+        <label>
+          <span>Macizo</span>
+          <select id="summit-massif"><option value="">Todos</option></select>
+        </label>
+
+        <label>
+          <span>Estado</span>
+          <select id="summit-status">
+            <option value="">Todas</option>
+            <option value="ascendida">Ascendidas</option>
+            <option value="pendiente">Sin ascensión registrada</option>
+          </select>
+        </label>
+
+        <label>
+          <span>Orden</span>
+          <select id="summit-order">
+            <option value="name">Nombre</option>
+            <option value="altitude-desc">Mayor altitud</option>
+            <option value="altitude-asc">Menor altitud</option>
+            <option value="date">Fecha de ascensión</option>
+          </select>
+        </label>
+
+        <button id="summit-reset" class="reset-button" type="button">Limpiar</button>
+      </div>
+
+      <div class="archive-results-line">
+        <p id="summit-count"></p>
+        <div class="view-switch" aria-label="Cambiar vista">
+          <button id="grid-view" class="active" type="button">Cuadrícula</button>
+          <button id="list-view" type="button">Lista</button>
+        </div>
+      </div>
+
+      <div id="summit-grid" class="summit-grid" aria-live="polite"></div>
+    </section>
+  </main>
+
+  <footer class="site-footer shell">
+    <p>Archivo personal actualizado desde Google Sheets.</p>
+    <a href="index.html">Volver al inicio ↑</a>
+  </footer>
+
+  <script type="module" src="./cumbres.js"></script>
+  <script src="./site-nav.js"></script>
+</body>
+</html>
