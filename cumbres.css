@@ -8,7 +8,7 @@
   border-bottom: 1px solid var(--line);
   background:
     linear-gradient(90deg, rgb(8 20 29 / 82%), rgb(8 20 29 / 35%)),
-    url("./portada.jpg") center 43% / cover;
+    url("./img/hero-cumbres.jpg") center 43% / cover;
   color: white;
 }
 

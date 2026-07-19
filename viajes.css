@@ -2,7 +2,7 @@
 .trip-archive-hero {
   background:
     linear-gradient(90deg, rgb(8 20 29 / 82%), rgb(8 20 29 / 32%)),
-    url("./portada.jpg") center 46% / cover;
+    url("./img/hero-viajes.jpg") center 46% / cover;
 }
 
 .trip-toolbar {
