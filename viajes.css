@@ -163,7 +163,7 @@
   color: white;
   background:
     linear-gradient(90deg, rgb(6 18 27 / 88%), rgb(6 18 27 / 25%)),
-    url("./portada.jpg") center 47% / cover;
+    url("././img/hero-viajes.jpg.jpg") center 47% / cover;
 }
 
 .trip-detail-date {
@@ -345,11 +345,11 @@
 .trip-archive-hero {
   background:
     linear-gradient(90deg, rgb(30 20 12 / 86%), rgb(20 18 12 / 22%)),
-    url("./portada.jpg") center 58% / cover;
+    url("./img/hero-viajes.jpg") center 58% / cover;
 }
 
 .trip-detail-hero {
   background:
     linear-gradient(90deg, rgb(28 18 10 / 90%), rgb(14 20 22 / 18%)),
-    url("./portada.jpg") center 62% / cover;
+    url("./img/hero-viajes.jpg") center 62% / cover;
 }

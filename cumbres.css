@@ -238,7 +238,7 @@
   color: white;
   background:
     linear-gradient(90deg, rgb(6 18 27 / 86%), rgb(6 18 27 / 30%)),
-    url("./portada.jpg") center 42% / cover;
+    url("./img/hero-cumbres.jpg") center 42% / cover;
 }
 
 .back-link {
@@ -470,11 +470,11 @@ dd {
   background:
     linear-gradient(90deg, rgb(10 24 34 / 88%), rgb(10 24 34 / 24%)),
     linear-gradient(0deg, rgb(3 18 10 / 18%), transparent),
-    url("./portada.jpg") center 29% / cover;
+    url("./img/hero-cumbres.jpg") center 29% / cover;
 }
 
 .summit-detail-hero {
   background:
     linear-gradient(90deg, rgb(8 20 29 / 90%), rgb(8 20 29 / 20%)),
-    url("./portada.jpg") center 35% / cover;
+    url("./img/hero-cumbres.jpg") center 35% / cover;
 }
