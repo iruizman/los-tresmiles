@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Historia compartida en la montaña · Los Tresmiles de Iñaki">
+  <title>Historia compartida · Los Tresmiles de Iñaki</title>
+  <link rel="stylesheet" href="./css/styles.css">
+  <link rel="stylesheet" href="./css/persona.css">
+</head>
+<body class="inner-page person-page">
+  <header class="site-header">
+    <a class="brand" href="index.html" aria-label="Ir al inicio">
+      <span class="brand-logo" aria-hidden="true">
+        <svg viewBox="0 0 64 42">
+          <path d="M3 37 20 9l10 16 8-12 23 24H3Z" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linejoin="round"/>
+          <path d="m15 25 5-7 5 8m9-5 4-5 6 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+        </svg>
+      </span>
+      <span>Los Tresmiles de Iñaki</span>
+    </a>
+
+    <nav aria-label="Navegación principal">
+      <a href="index.html">Inicio</a>
+      <a href="index.html#estadisticas">Progreso</a>
+      <a href="index.html#mapa">Mapa</a>
+      <a href="viajes.html">Viajes</a>
+      <a href="cumbres.html">Cumbres</a>
+      <a class="active" href="personas.html" aria-current="page">Personas</a>
+    </nav>
+  </header>
+
+  <main id="person-page" hidden>
+    <section class="person-hero" id="person-hero">
+      <div class="person-hero__media" aria-hidden="true"><img id="person-hero-image" alt=""></div>
+      <div class="person-hero__shade" aria-hidden="true"></div>
+      <div class="shell person-hero__inner">
+        <nav class="breadcrumbs breadcrumbs--light" aria-label="Migas de pan">
+          <a href="index.html">Inicio</a><span>/</span><a href="personas.html">Personas</a><span>/</span><span id="person-breadcrumb"></span>
+        </nav>
+        <div class="person-hero__copy">
+          <p class="eyebrow eyebrow--light">Historia compartida</p>
+          <h1 id="person-name"></h1>
+          <p id="person-intro" class="person-hero__intro"></p>
+          <dl class="person-hero__stats" aria-label="Resumen de la historia compartida">
+            <div><dd id="stat-summits">0</dd><dt>Cumbres</dt></div>
+            <div><dd id="stat-trips">0</dd><dt>Viajes</dt></div>
+            <div><dd id="stat-years">0</dd><dt>Años</dt></div>
+          </dl>
+        </div>
+      </div>
+    </section>
+
+    <section class="mountain-history">
+      <div class="shell mountain-history__inner">
+        <div class="section-heading section-heading--split">
+          <div>
+            <p class="eyebrow">La historia, año a año</p>
+            <h2>Una cordillera compartida</h2>
+          </div>
+          <p>Cada pico representa un año. Cuantas más cumbres compartimos, más alto se eleva el perfil.</p>
+        </div>
+
+        <div class="ridge-explorer" aria-label="Explorador de la historia compartida">
+          <div class="ridge-explorer__hint">
+            <span class="ridge-explorer__pulse" aria-hidden="true"></span>
+            <p>Selecciona un pico para descubrir las ascensiones de ese año.</p>
+            <p class="ridge-explorer__selection"><span>Año seleccionado</span><strong id="active-year-indicator">—</strong></p>
+          </div>
+
+          <div class="ridge" id="ridge" aria-label="Perfil temporal de cumbres compartidas">
+          <svg id="ridge-svg" viewBox="0 0 1440 520" role="img" aria-labelledby="ridge-title ridge-desc">
+            <title id="ridge-title">Perfil de montañas por año</title>
+            <desc id="ridge-desc">La altura de cada pico representa el número de cumbres compartidas en ese año.</desc>
+            <defs>
+              <linearGradient id="ridge-fill" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="currentColor" stop-opacity="0.28"/>
+                <stop offset="75%" stop-color="currentColor" stop-opacity="0.08"/>
+                <stop offset="100%" stop-color="currentColor" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+            <g id="ridge-grid"></g>
+            <path id="ridge-area" fill="url(#ridge-fill)"></path>
+            <path id="ridge-line" fill="none" vector-effect="non-scaling-stroke"></path>
+            <g id="ridge-points"></g>
+            <g id="ridge-labels"></g>
+          </svg>
+            <div id="ridge-tooltip" class="ridge-tooltip" role="status" hidden></div>
+          </div>
+
+          <div class="ridge-explorer__connector" aria-hidden="true"><span></span></div>
+
+          <article class="year-detail" id="year-detail" aria-live="polite">
+          <div class="year-detail__heading">
+            <div>
+              <p class="eyebrow">Cuaderno de expedición</p>
+              <h3 id="selected-year"></h3>
+            </div>
+            <p id="selected-year-summary"></p>
+          </div>
+            <div id="selected-ascents" class="year-ascents"></div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="shared-trips shell" id="shared-trips-section">
+      <div class="section-heading section-heading--split">
+        <div><p class="eyebrow">El camino</p><h2>Viajes compartidos</h2></div>
+        <p>Los lugares que fueron dando forma a esta historia.</p>
+      </div>
+      <div id="shared-trips" class="trip-strip"></div>
+    </section>
+
+    <section class="person-gallery shell" id="gallery-section">
+      <div class="section-heading">
+        <p class="eyebrow">El álbum</p>
+        <h2>Recuerdos de montaña</h2>
+      </div>
+      <div id="person-gallery" class="story-gallery"></div>
+    </section>
+
+    <section class="all-ascents shell">
+      <div class="section-heading section-heading--split">
+        <div><p class="eyebrow">El archivo completo</p><h2>Todas las ascensiones</h2></div>
+        <p id="all-ascents-count"></p>
+      </div>
+      <div id="all-ascents" class="ascents-journal"></div>
+    </section>
+
+    <nav class="person-pagination shell" aria-label="Navegación entre compañeros">
+      <a id="previous-person" class="person-pagination__item" href="personas.html"><span>← Anterior</span><strong></strong></a>
+      <a id="next-person" class="person-pagination__item person-pagination__item--next" href="personas.html"><span>Siguiente →</span><strong></strong></a>
+    </nav>
+  </main>
+
+  <section id="person-not-found" class="not-found shell" hidden>
+    <p class="eyebrow">Archivo de montaña</p>
+    <h1>No hemos encontrado esta historia.</h1>
+    <p>La persona solicitada no existe todavía en el archivo.</p>
+    <a href="personas.html">Volver a compañeros →</a>
+  </section>
+
+  <footer class="site-footer shell">
+    <p>Personas conectadas con viajes, cumbres y recuerdos compartidos.</p>
+    <a href="personas.html">Volver a compañeros ↑</a>
+  </footer>
+
+  <script src="./js/persona.js" defer></script>
+  <script src="./js/site-nav.js"></script>
+</body>
+</html>
