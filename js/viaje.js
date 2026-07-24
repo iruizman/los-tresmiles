@@ -1,6 +1,6 @@
 import { loadRawData } from "./data.js";
 import { buildDatabase } from "./db.js";
-import { escapeHtml, formatDate, summitUrl } from "./shared.js";
+import { escapeHtml, formatDate, personUrl, summitUrl } from "./shared.js";
 
 const root = document.querySelector("#trip-detail");
 
@@ -165,7 +165,9 @@ async function start() {
             <h2>Personas</h2>
             <div class="trip-people-list">
               ${people.length
-                ? people.map((person) => `<span>${escapeHtml(person.nombreCompleto || person.alias)}</span>`).join("")
+                ? people.map((person) => person.id === "P010"
+                  ? `<span>${escapeHtml(person.nombreCompleto || person.alias || person.id)}</span>`
+                  : `<a href="${personUrl(person)}">${escapeHtml(person.nombreCompleto || person.alias || person.id)} <span aria-hidden="true">→</span></a>`).join("")
                 : "<p>No hay personas registradas.</p>"}
             </div>
           </section>

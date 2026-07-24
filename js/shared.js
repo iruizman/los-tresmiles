@@ -39,3 +39,7 @@ export function isPrimary(summit) {
 export function tripUrl(trip) {
   return `viaje.html?id=${encodeURIComponent(trip.id)}`;
 }
+
+export function personUrl(person) {
+  return `persona.html?id=${encodeURIComponent(person.id)}`;
+}
