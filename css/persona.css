@@ -90,7 +90,9 @@ body.person-page main{overflow:hidden}
 .person-pagination__item span{display:block;color:var(--persona-muted);font-size:.68rem;text-transform:uppercase;letter-spacing:.13em}
 .person-pagination__item strong{display:block;margin-top:8px;font-size:clamp(1.25rem,2vw,1.8rem);font-weight:500}
 .not-found{display:flex;min-height:65vh;flex-direction:column;justify-content:center}.not-found h1{margin:0;font-size:clamp(2.5rem,6vw,5rem)}.not-found a{margin-top:25px;color:inherit}
-
+.not-found[hidden] {
+    display: none;
+}
 @media(max-width:900px){
   .person-summary{grid-template-columns:1fr}.section-heading--split{display:block}.section-heading--split>p{margin-top:22px}
   .year-ascents,.trip-strip{grid-template-columns:1fr 1fr}.year-ascent:nth-child(3n+2),.year-ascent:nth-child(3n+3){padding-left:0;border-left:0}.year-ascent:nth-child(even){padding-left:18px;border-left:1px solid var(--persona-line)}
