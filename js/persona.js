@@ -1,8 +1,8 @@
 import { loadRawData } from './data.js';
 import { buildDatabase } from './db.js';
 import { escapeHtml, formatDate, summitUrl, tripUrl } from './shared.js';
+import { personMedia } from './person-media.js';
 
-const PHOTO_BY_ID={P001:'./img/personas/gotzon-zubiaur.jpg',P002:'./img/personas/jon-arostegi.jpg',P003:'./img/personas/mikel-agirre.jpg',P004:'./img/personas/jose-fonta.jpg',P005:'./img/personas/josu-zubiaur.jpg'};
 const EXCLUDED_IDS=new Set(['P010']);
 const $=s=>document.querySelector(s);
 function nameOf(p){return p.nombreCompleto||p.alias||p.nombre||p.id;}
@@ -14,7 +14,6 @@ function sortedAscents(a){return [...a].sort((x,y)=>(x.fechaDate?.getTime()||0)-
 function uniqueTrips(a){return uniqueBy(a.filter(x=>x.viaje),x=>x.viaje.id).map(x=>x.viaje);}
 function uniqueSummits(a){return uniqueBy(a.filter(x=>x.cumbre),x=>x.cumbre.id).map(x=>x.cumbre);}
 function groupYears(ascents){const m=new Map();sortedAscents(ascents).forEach(a=>{const y=ascentYear(a);if(!y)return;if(!m.has(y))m.set(y,[]);m.get(y).push(a)});return m;}
-function photoFor(p){return PHOTO_BY_ID[p.id]||'';}
 function renderSelectedYear(year,ascents){const d=$('#year-detail');d.classList.add('is-updating');setTimeout(()=>{$('#selected-year').textContent=year;$('#active-year-indicator').textContent=year;$('#selected-year-summary').textContent=`${ascents.length} ${plural(ascents.length,'cumbre compartida','cumbres compartidas')}`;$('#selected-ascents').innerHTML=ascents.map(a=>`<a class="year-ascent" href="${summitUrl(a.cumbre)}"><strong>${escapeHtml(a.cumbre?.nombre||a.nombre)}</strong><span>${a.cumbre?.altitud||a.altitud||'—'} m · ${escapeHtml(formatDate(a.fecha))}</span></a>`).join('');d.classList.remove('is-updating')},120);}
 function renderRidge(ascents){
   const grouped=groupYears(ascents), years=[...grouped.keys()].sort((a,b)=>a-b); if(!years.length){$('.mountain-history').hidden=true;return;}
@@ -31,14 +30,14 @@ function renderRidge(ascents){
   const peak=[...grouped.entries()].sort((a,b)=>b[1].length-a[1].length||b[0]-a[0])[0][0];select(peak);
 }
 function renderTrips(ascents,person){const trips=uniqueTrips(ascents);$('#stat-trips').textContent=trips.length;if(!trips.length){$('#shared-trips-section').hidden=true;return;}$('#shared-trips').innerHTML=trips.slice(0,6).map(t=>{const count=new Set(ascents.filter(a=>a.idViaje===t.id).map(a=>a.idCumbre)).size;return `<a class="trip-card" href="${tripUrl(t)}"><img src="./img/hero-viajes.jpg" alt="" loading="lazy"><span class="trip-card__copy"><strong>${escapeHtml(t.nombre)}</strong><span>${t.fechaInicioDate?.getFullYear()||''} · ${count} ${plural(count,'tresmil','tresmiles')}</span></span></a>`}).join('');}
-function renderGallery(person){const photo=photoFor(person);if(!photo){$('#gallery-section').hidden=true;return;}$('#person-gallery').innerHTML=`<figure><img src="${photo}" alt="${escapeHtml(nameOf(person))} en la montaña" loading="lazy"></figure>`;}
+function renderGallery(person){const media=personMedia(person);if(!media?.gallery.length){$('#gallery-section').hidden=true;return;}$('#person-gallery').innerHTML=media.gallery.map((photo,index)=>`<figure><img src="${photo}" alt="Recuerdo de montaña ${index+1} con ${escapeHtml(nameOf(person))}" loading="lazy" decoding="async"></figure>`).join('');}
 function renderAll(ascents){const rows=sortedAscents(ascents);$('#all-ascents-count').textContent=`${rows.length} ${plural(rows.length,'ascensión','ascensiones')}`;const groups=groupYears(rows);$('#all-ascents').innerHTML=[...groups.entries()].map(([year,list])=>`<section class="journal-year"><h3 class="journal-year__label">${year}</h3><div class="journal-year__entries">${list.map(a=>`<a class="journal-entry" href="${summitUrl(a.cumbre)}"><strong>${escapeHtml(a.cumbre?.nombre||a.nombre)}</strong><span class="journal-entry__date">${escapeHtml(formatDate(a.fecha))}</span><span class="journal-entry__altitude">${a.cumbre?.altitud||a.altitud||'—'} m</span></a>`).join('')}</div></section>`).join('');}
 function renderPagination(person,people){const i=people.findIndex(p=>p.id===person.id),prev=people[(i-1+people.length)%people.length],next=people[(i+1)%people.length];const pl=$('#previous-person'),nl=$('#next-person');pl.href=`./persona.html?id=${prev.id}`;pl.querySelector('strong').textContent=nameOf(prev);nl.href=`./persona.html?id=${next.id}`;nl.querySelector('strong').textContent=nameOf(next);}
 async function start(){
   try{const db=buildDatabase(await loadRawData()),person=db.indexes.personasById.get(getId());if(!person||EXCLUDED_IDS.has(person.id)){throw new Error('PERSON_NOT_FOUND')}
     const ascents=sortedAscents(person.ascensiones),summits=uniqueSummits(ascents),years=[...new Set(ascents.map(ascentYear).filter(Boolean))],people=db.personas.filter(p=>!EXCLUDED_IDS.has(p.id)&&p.ascensiones.length).sort((a,b)=>nameOf(a).localeCompare(nameOf(b),'es'));
     document.title=`${nameOf(person)} | Los Tresmiles de Iñaki`;$('#person-name').textContent=nameOf(person);$('#person-breadcrumb').textContent=nameOf(person);$('#person-intro').textContent=years.length?`Compartiendo montaña desde ${Math.min(...years)}.`:'Una historia pendiente de completar en el archivo.';$('#stat-summits').textContent=summits.length;$('#stat-years').textContent=years.length;
-    const hero=$('#person-hero-image'),photo=photoFor(person);if(photo){hero.src=photo;hero.alt=`${nameOf(person)} en la montaña`;}else{hero.remove();$('#person-hero').classList.add('person-hero--without-photo');}
+    const hero=$('#person-hero-image'),media=personMedia(person);if(media){hero.src=media.cover;hero.alt=`${nameOf(person)} en la montaña`;hero.style.objectPosition=media.heroPosition;}else{hero.remove();$('#person-hero').classList.add('person-hero--without-photo');}
     renderTrips(ascents,person);renderGallery(person);renderAll(ascents);renderPagination(person,people);renderRidge(ascents);$('#person-page').hidden=false;
   }catch(error){console.error(error);$('#person-not-found').hidden=false;if(error.message!=='PERSON_NOT_FOUND')$('#person-not-found p:last-of-type').textContent=`No se pudieron cargar los datos: ${error.message}`;}
 }

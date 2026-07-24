@@ -1,14 +1,8 @@
 import { loadRawData } from './data.js';
 import { buildDatabase } from './db.js';
 import { escapeHtml, normalizeSearch } from './shared.js';
+import { personMedia } from './person-media.js';
 
-const PHOTO_BY_ID = {
-  P001: './img/personas/gotzon-zubiaur.jpg',
-  P002: './img/personas/jon-arostegi.jpg',
-  P003: './img/personas/mikel-agirre.jpg',
-  P004: './img/personas/jose-fonta.jpg',
-  P005: './img/personas/josu-zubiaur.jpg'
-};
 const EXCLUDED_IDS = new Set(['P010']);
 const state = { query: '', sort: 'summits-desc', people: [] };
 const grid = document.querySelector('#people-grid');
@@ -26,8 +20,8 @@ function firstYear(person){ const y=years(person); return y.length?Math.min(...y
 function lastYear(person){ const y=years(person); return y.length?Math.max(...y):0; }
 
 function personImage(person){
-  const name=personName(person), photo=PHOTO_BY_ID[person.id];
-  return photo ? `<img src="${photo}" alt="${escapeHtml(name)} en la montaña" loading="lazy" decoding="async">` : `<span class="person-card__fallback" aria-hidden="true">${escapeHtml(initials(name))}</span>`;
+  const name=personName(person), media=personMedia(person);
+  return media ? `<img src="${media.cover}" alt="${escapeHtml(name)} en la montaña" loading="lazy" decoding="async" style="object-position:${media.cardPosition}">` : `<span class="person-card__fallback" aria-hidden="true">${escapeHtml(initials(name))}</span>`;
 }
 function personCard(person){
   const name=personName(person), summits=summitCount(person), trips=tripCount(person);

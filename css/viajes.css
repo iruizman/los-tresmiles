@@ -353,3 +353,40 @@
     linear-gradient(90deg, rgb(28 18 10 / 90%), rgb(14 20 22 / 18%)),
     url("../img/hero-viajes.jpg") center 62% / cover;
 }
+
+/* Sprint 001 · enlaces entre viajes y personas */
+.trip-people-list a,
+.trip-people-list > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 11px;
+  border-radius: 999px;
+  background: #ece9e2;
+  color: inherit;
+  font-size: .84rem;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.trip-people-list a {
+  transition: background-color .2s ease, color .2s ease, transform .2s ease;
+}
+
+.trip-people-list a:hover,
+.trip-people-list a:focus-visible {
+  background: var(--green-dark, #075c36);
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+.trip-people-list a span {
+  padding: 0;
+  background: transparent;
+  transition: transform .2s ease;
+}
+
+.trip-people-list a:hover span,
+.trip-people-list a:focus-visible span {
+  transform: translateX(2px);
+}

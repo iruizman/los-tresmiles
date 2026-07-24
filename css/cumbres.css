@@ -478,3 +478,34 @@ dd {
     linear-gradient(90deg, rgb(8 20 29 / 90%), rgb(8 20 29 / 20%)),
     url("../img/hero-cumbres.jpg") center 35% / cover;
 }
+
+/* Sprint 001 · compañeros enlazados desde cada ascensión */
+.ascent-people {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.ascent-people a,
+.ascent-people span {
+  display: inline-flex;
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: #ece9e2;
+  color: inherit;
+  font-size: .82rem;
+  font-weight: 800;
+  line-height: 1.25;
+  text-decoration: none;
+}
+
+.ascent-people a {
+  transition: background-color .2s ease, color .2s ease, transform .2s ease;
+}
+
+.ascent-people a:hover,
+.ascent-people a:focus-visible {
+  background: var(--green-dark, #075c36);
+  color: #fff;
+  transform: translateY(-1px);
+}

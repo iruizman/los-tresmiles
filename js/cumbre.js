@@ -1,6 +1,6 @@
 import { loadRawData } from "./data.js";
 import { buildDatabase } from "./db.js";
-import { escapeHtml, formatDate, summitUrl, tripUrl } from "./shared.js";
+import { escapeHtml, formatDate, personUrl, summitUrl, tripUrl } from "./shared.js";
 
 const root = document.querySelector("#summit-detail");
 
@@ -11,9 +11,7 @@ function externalLink(url, label) {
 }
 
 function ascentHtml(ascent) {
-  const people = ascent.personas
-    .map((person) => person.nombreCompleto || person.alias)
-    .filter(Boolean);
+  const people = ascent.personas.filter((person) => person.nombreCompleto || person.alias || person.id);
 
   return `
     <article class="ascent-record">
@@ -25,7 +23,7 @@ function ascentHtml(ascent) {
       <dl>
         ${ascent.puntoSalida ? `<div><dt>Punto de salida</dt><dd>${escapeHtml(ascent.puntoSalida)}</dd></div>` : ""}
         ${ascent.alojamiento || ascent.viaje?.alojamiento ? `<div><dt>Alojamiento</dt><dd>${escapeHtml(ascent.alojamiento || ascent.viaje.alojamiento)}</dd></div>` : ""}
-        ${people.length ? `<div><dt>Compañeros</dt><dd>${escapeHtml(people.join(", "))}</dd></div>` : ""}
+        ${people.length ? `<div><dt>Compañeros</dt><dd class="ascent-people">${people.map((person) => person.id === "P010" ? `<span>${escapeHtml(person.nombreCompleto || person.alias || person.id)}</span>` : `<a href="${personUrl(person)}">${escapeHtml(person.nombreCompleto || person.alias || person.id)}</a>`).join("")}</dd></div>` : ""}
       </dl>
       <div class="detail-actions">
         ${externalLink(ascent.viaje?.album || ascent.fotos, "Ver fotografías")}
