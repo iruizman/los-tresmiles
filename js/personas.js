@@ -1,129 +1,63 @@
-/* =========================================================
-   PERSONAS V7 — TARJETAS INTEGRADAS
-   ========================================================= */
+import { loadRawData } from './data.js';
+import { buildDatabase } from './db.js';
+import { escapeHtml, normalizeSearch } from './shared.js';
 
 const PHOTO_BY_ID = {
-  P001: "./img/personas/gotzon-zubiaur.jpg",
-  P002: "./img/personas/jon-arostegi.jpg",
-  P003: "./img/personas/mikel-agirre.jpg",
-  P004: "./img/personas/jose-fonta.jpg",
-  P005: "./img/personas/josu-zubiaur.jpg",
+  P001: './img/personas/gotzon-zubiaur.jpg',
+  P002: './img/personas/jon-arostegi.jpg',
+  P003: './img/personas/mikel-agirre.jpg',
+  P004: './img/personas/jose-fonta.jpg',
+  P005: './img/personas/josu-zubiaur.jpg'
 };
+const EXCLUDED_IDS = new Set(['P010']);
+const state = { query: '', sort: 'summits-desc', people: [] };
+const grid = document.querySelector('#people-grid');
+const count = document.querySelector('#people-count');
+const empty = document.querySelector('#people-empty');
+const search = document.querySelector('#people-search');
+const sort = document.querySelector('#people-sort');
 
-const PEOPLE = [
-  { id: "P001", name: "Gotzon Zubiaur", firstYear: 2010, lastYear: 2025, summits: 28, trips: 8 },
-  { id: "P002", name: "Jon Arostegi", firstYear: 2013, lastYear: 2025, summits: 31, trips: 7 },
-  { id: "P003", name: "Mikel Agirre", firstYear: 2013, lastYear: 2024, summits: 24, trips: 6 },
-  { id: "P004", name: "Jose Fonta", firstYear: 2016, lastYear: 2024, summits: 20, trips: 5 },
-  { id: "P005", name: "Josu Zubiaur", firstYear: 2015, lastYear: 2025, summits: 19, trips: 5 },
-  { id: "P006", name: "Roberto Fernandez", firstYear: 2017, lastYear: 2017, summits: 1, trips: 1 },
-  { id: "P007", name: "Raul Primo", firstYear: 2022, lastYear: 2022, summits: 1, trips: 1 },
-  { id: "P008", name: "Javi Lozano", firstYear: 2019, lastYear: 2019, summits: 2, trips: 1 },
-  { id: "P009", name: "Miguel del Rio", firstYear: 2016, lastYear: 2016, summits: 3, trips: 1 },
-  { id: "P011", name: "Oscar Garro", firstYear: 2024, lastYear: 2024, summits: 1, trips: 1 },
-].map((person) => ({ ...person, photo: PHOTO_BY_ID[person.id] || "" }));
+function personName(person){ return person.nombreCompleto || person.alias || person.nombre || person.id; }
+function initials(name){ return name.split(/\s+/).filter(Boolean).slice(0,2).map(p=>p[0]).join('').toUpperCase(); }
+function tripCount(person){ return new Set(person.ascensiones.map(a=>a.idViaje).filter(Boolean)).size; }
+function summitCount(person){ return new Set(person.ascensiones.map(a=>a.idCumbre).filter(Boolean)).size; }
+function years(person){ return person.ascensiones.map(a=>a.fechaDate?.getFullYear()).filter(Boolean); }
+function firstYear(person){ const y=years(person); return y.length?Math.min(...y):9999; }
+function lastYear(person){ const y=years(person); return y.length?Math.max(...y):0; }
 
-const state = { query: "", sort: "summits-desc" };
-const grid = document.querySelector("#people-grid");
-const count = document.querySelector("#people-count");
-const empty = document.querySelector("#people-empty");
-const search = document.querySelector("#people-search");
-const sort = document.querySelector("#people-sort");
-
-function normalise(value) {
-  return String(value || "")
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .trim();
+function personImage(person){
+  const name=personName(person), photo=PHOTO_BY_ID[person.id];
+  return photo ? `<img src="${photo}" alt="${escapeHtml(name)} en la montaña" loading="lazy" decoding="async">` : `<span class="person-card__fallback" aria-hidden="true">${escapeHtml(initials(name))}</span>`;
 }
-
-function initials(name) {
-  return name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0])
-    .join("")
-    .toUpperCase();
+function personCard(person){
+  const name=personName(person), summits=summitCount(person), trips=tripCount(person);
+  return `<article class="person-card"><a class="person-card__link" href="./persona.html?id=${encodeURIComponent(person.id)}" aria-label="Ver la historia compartida con ${escapeHtml(name)}"><div class="person-card__visual">${personImage(person)}<div class="person-card__shade" aria-hidden="true"></div><h2>${escapeHtml(name)}</h2></div><div class="person-card__footer"><div class="person-card__stat"><strong>${summits}</strong><span>${summits===1?'Cumbre':'Cumbres'}</span></div><div class="person-card__stat"><strong>${trips}</strong><span>${trips===1?'Viaje':'Viajes'}</span></div><span class="person-card__action">Ver historia <span aria-hidden="true">→</span></span></div></a></article>`;
 }
-
-function personImage(person) {
-  if (!person.photo) {
-    return `<span class="person-card__fallback" aria-hidden="true">${initials(person.name)}</span>`;
-  }
-
-  return `<img src="${person.photo}" alt="${person.name} en la montaña" loading="lazy" decoding="async">`;
-}
-
-function personCard(person) {
-  const href = `./persona.html?id=${encodeURIComponent(person.id)}`;
-  const summitLabel = person.summits === 1 ? "Cumbre" : "Cumbres";
-  const tripLabel = person.trips === 1 ? "Viaje" : "Viajes";
-
-  return `
-    <article class="person-card">
-      <a class="person-card__link" href="${href}" aria-label="Ver la historia compartida con ${person.name}">
-        <div class="person-card__visual">
-          ${personImage(person)}
-          <div class="person-card__shade" aria-hidden="true"></div>
-          <h2>${person.name}</h2>
-        </div>
-
-        <div class="person-card__footer">
-          <div class="person-card__stat">
-            <strong>${person.summits}</strong>
-            <span>${summitLabel}</span>
-          </div>
-          <div class="person-card__stat">
-            <strong>${person.trips}</strong>
-            <span>${tripLabel}</span>
-          </div>
-          <span class="person-card__action">Ver historia <span aria-hidden="true">→</span></span>
-        </div>
-      </a>
-    </article>`;
-}
-
-function sortedPeople(items) {
-  const result = [...items];
-  const byName = (a, b) => a.name.localeCompare(b.name, "es", { sensitivity: "base" });
-
-  switch (state.sort) {
-    case "trips-desc":
-      return result.sort((a, b) => b.trips - a.trips || b.summits - a.summits || byName(a, b));
-    case "recent-desc":
-      return result.sort((a, b) => b.lastYear - a.lastYear || b.summits - a.summits || byName(a, b));
-    case "first-asc":
-      return result.sort((a, b) => a.firstYear - b.firstYear || byName(a, b));
-    case "name-asc":
-      return result.sort(byName);
-    default:
-      return result.sort((a, b) => b.summits - a.summits || b.trips - a.trips || byName(a, b));
+function sortedPeople(items){
+  const result=[...items], byName=(a,b)=>personName(a).localeCompare(personName(b),'es',{sensitivity:'base'});
+  switch(state.sort){
+    case 'trips-desc': return result.sort((a,b)=>tripCount(b)-tripCount(a)||summitCount(b)-summitCount(a)||byName(a,b));
+    case 'recent-desc': return result.sort((a,b)=>lastYear(b)-lastYear(a)||summitCount(b)-summitCount(a)||byName(a,b));
+    case 'first-asc': return result.sort((a,b)=>firstYear(a)-firstYear(b)||byName(a,b));
+    case 'name-asc': return result.sort(byName);
+    default: return result.sort((a,b)=>summitCount(b)-summitCount(a)||tripCount(b)-tripCount(a)||byName(a,b));
   }
 }
-
-function render() {
-  const query = normalise(state.query);
-  const filtered = query
-    ? PEOPLE.filter((person) => normalise(person.name).includes(query))
-    : PEOPLE;
-  const visible = sortedPeople(filtered);
-
-  grid.innerHTML = visible.map(personCard).join("");
-  count.textContent = visible.length === 1 ? "1 compañero" : `${visible.length} compañeros`;
-  grid.hidden = visible.length === 0;
-  empty.hidden = visible.length !== 0;
+function render(){
+  const q=normalizeSearch(state.query);
+  const filtered=q?state.people.filter(p=>normalizeSearch([personName(p),p.alias].filter(Boolean).join(' ')).includes(q)):state.people;
+  const visible=sortedPeople(filtered);
+  grid.innerHTML=visible.map(personCard).join('');
+  count.textContent=visible.length===1?'1 compañero':`${visible.length} compañeros`;
+  grid.hidden=!visible.length; empty.hidden=!!visible.length;
 }
-
-search.addEventListener("input", (event) => {
-  state.query = event.currentTarget.value;
-  render();
-});
-
-sort.addEventListener("change", (event) => {
-  state.sort = event.currentTarget.value;
-  render();
-});
-
-render();
+async function start(){
+  try{
+    const db=buildDatabase(await loadRawData());
+    state.people=db.personas.filter(p=>!EXCLUDED_IDS.has(p.id)&&p.ascensiones.length>0);
+    search.addEventListener('input',e=>{state.query=e.currentTarget.value;render();});
+    sort.addEventListener('change',e=>{state.sort=e.currentTarget.value;render();});
+    render();
+  }catch(error){ console.error(error); count.textContent='No se pudieron cargar los datos'; grid.innerHTML=`<div class="archive-empty"><p>${escapeHtml(error.message)}</p></div>`; }
+}
+start();
