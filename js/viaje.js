@@ -1,13 +1,45 @@
 import { loadRawData } from "./data.js";
 import { buildDatabase } from "./db.js";
 import { escapeHtml, formatDate, personUrl, summitUrl } from "./shared.js";
+import { travelMedia } from "./travel-media.js";
 
 const root = document.querySelector("#trip-detail");
 
-function externalLink(url, label) {
+function externalLink(url, label, className = "detail-action") {
   return url
-    ? `<a class="detail-action" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">${label} ↗</a>`
+    ? `<a class="${className}" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(label)} ↗</a>`
     : "";
+}
+
+function accommodationValue(trip) {
+  const name = trip.alojamiento || "—";
+  return trip.urlAlojamiento && trip.alojamiento
+    ? `<a class="fact-link" href="${escapeHtml(trip.urlAlojamiento)}" target="_blank" rel="noopener noreferrer">${escapeHtml(name)} ↗</a>`
+    : escapeHtml(name);
+}
+
+function trackSection(trip) {
+  if (!trip.tracks?.length) return "";
+
+  return `
+    <section class="trip-tracks-section">
+      <p class="eyebrow">Huellas de la actividad</p>
+      <h2>Tracks</h2>
+      <div class="trip-track-list">
+        ${trip.tracks.map((track, index) => `
+          <a class="trip-track-card" href="${escapeHtml(track.url)}" target="_blank" rel="noopener noreferrer">
+            <span class="trip-track-number">${String(index + 1).padStart(2, "0")}</span>
+            <span class="trip-track-copy">
+              <strong>${escapeHtml(track.titulo || `Track ${index + 1}`)}</strong>
+              <small>Abrir registro de la actividad</small>
+            </span>
+            <span class="trip-track-arrow" aria-hidden="true">↗</span>
+          </a>
+        `).join("")}
+      </div>
+      <p class="trip-track-notice"><strong>Aviso:</strong> estos tracks son únicamente registros documentales de la actividad realizada. No constituyen rutas recomendadas ni garantizan que el itinerario sea adecuado, seguro o transitable en otras condiciones.</p>
+    </section>
+  `;
 }
 
 function uniqueSummits(trip) {
@@ -51,10 +83,16 @@ function summitList(trip) {
 }
 
 function renderMap(trip) {
+  const mapElement = document.querySelector("#trip-map");
+  if (!mapElement) return;
+
   const summits = uniqueSummits(trip).filter((summit) =>
     summit.latitud !== null && summit.longitud !== null
   );
-  if (!summits.length) return;
+  if (!summits.length) {
+    mapElement.innerHTML = `<div class="archive-empty"><p>No hay coordenadas disponibles para este viaje.</p></div>`;
+    return;
+  }
 
   const map = L.map("trip-map", { scrollWheelZoom: false });
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -95,10 +133,14 @@ async function start() {
 
     const summits = uniqueSummits(trip);
     const people = peopleForTrip(trip);
+    const media = travelMedia(trip);
+    const heroStyle = media
+      ? ` style="background-image: linear-gradient(90deg, rgb(28 18 10 / 90%), rgb(14 20 22 / 18%)), url('${escapeHtml(media.cover)}'); background-position: ${escapeHtml(media.heroPosition)}"`
+      : "";
     document.title = `${trip.nombre} · Los Tresmiles de Iñaki`;
 
     root.innerHTML = `
-      <section class="trip-detail-hero">
+      <section class="trip-detail-hero${media ? " has-photo" : ""}"${heroStyle}>
         <div class="shell">
           <nav class="breadcrumbs detail-breadcrumbs" aria-label="Migas de pan">
             <a href="index.html">Inicio</a><span>/</span>
@@ -127,6 +169,8 @@ async function start() {
             </section>
           ` : ""}
 
+          ${trackSection(trip)}
+
           <section>
             <p class="eyebrow">Recorrido</p>
             <h2>Mapa de cumbres</h2>
@@ -149,13 +193,12 @@ async function start() {
               <div><dt>Fechas</dt><dd>${escapeHtml(dateRange(trip))}</dd></div>
               <div><dt>Zona</dt><dd>${escapeHtml(trip.zonaPrincipal || "—")}</dd></div>
               <div><dt>Base</dt><dd>${escapeHtml(trip.base || "—")}</dd></div>
-              <div><dt>Alojamiento</dt><dd>${escapeHtml(trip.alojamiento || "—")}</dd></div>
+              <div><dt>Alojamiento</dt><dd>${accommodationValue(trip)}</dd></div>
               <div><dt>País</dt><dd>${escapeHtml(trip.pais || "—")}</dd></div>
             </dl>
 
             <div class="detail-actions">
               ${externalLink(trip.album, "Ver fotografías")}
-              ${externalLink(trip.track, "Abrir track")}
               ${externalLink(trip.video, "Ver vídeo")}
             </div>
           </section>

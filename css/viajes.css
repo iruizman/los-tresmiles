@@ -390,3 +390,123 @@
 .trip-people-list a:focus-visible span {
   transform: translateX(2px);
 }
+
+/* Sprint 002 · fotografías, tracks y enlaces de alojamiento */
+.trip-card-visual.has-photo {
+  background-size: cover;
+  background-repeat: no-repeat;
+  transition: background-size .35s ease;
+}
+
+.trip-card:hover .trip-card-visual.has-photo {
+  background-size: 105%;
+}
+
+.trip-detail-hero.has-photo {
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+
+.fact-link {
+  color: var(--green-dark, #075c36);
+  font-weight: 850;
+  text-decoration-color: rgb(7 92 54 / 35%);
+  text-underline-offset: 3px;
+}
+
+.fact-link:hover,
+.fact-link:focus-visible {
+  color: var(--orange);
+}
+
+.trip-track-list {
+  display: grid;
+  gap: 10px;
+}
+
+.trip-track-card {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) auto;
+  gap: 15px;
+  align-items: center;
+  padding: 17px 18px;
+  border: 1px solid #d9d4ca;
+  border-radius: 14px;
+  background: rgb(255 255 255 / 55%);
+  color: var(--ink);
+  text-decoration: none;
+  transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+}
+
+.trip-track-card:hover,
+.trip-track-card:focus-visible {
+  transform: translateY(-2px);
+  border-color: rgb(7 92 54 / 42%);
+  box-shadow: 0 12px 30px rgb(20 30 40 / 9%);
+}
+
+.trip-track-number {
+  color: var(--orange);
+  font-size: .78rem;
+  font-weight: 950;
+  letter-spacing: .05em;
+}
+
+.trip-track-copy {
+  display: grid;
+  gap: 4px;
+}
+
+.trip-track-copy strong {
+  font-size: 1rem;
+}
+
+.trip-track-copy small {
+  color: var(--muted);
+  font-size: .78rem;
+}
+
+.trip-track-arrow {
+  color: var(--green-dark, #075c36);
+  font-size: 1.15rem;
+  transition: transform .18s ease;
+}
+
+.trip-track-card:hover .trip-track-arrow,
+.trip-track-card:focus-visible .trip-track-arrow {
+  transform: translate(2px, -2px);
+}
+
+.trip-track-notice {
+  margin: 14px 0 0;
+  padding: 14px 16px;
+  border-left: 4px solid #c7b78c;
+  border-radius: 0 10px 10px 0;
+  background: #f0ece2;
+  color: var(--muted);
+  font-size: .84rem;
+  line-height: 1.55;
+}
+
+.trip-track-notice strong {
+  color: var(--ink-soft);
+}
+
+@media (max-width: 620px) {
+  .trip-card:hover .trip-card-visual.has-photo {
+    background-size: cover;
+  }
+
+  .trip-detail-numbers {
+    flex-wrap: wrap;
+  }
+
+  .trip-detail-numbers div {
+    min-width: 110px;
+  }
+
+  .trip-track-card {
+    grid-template-columns: 36px minmax(0, 1fr) auto;
+    padding: 15px;
+  }
+}

@@ -33,7 +33,29 @@ const PERSON_MEDIA = {
     cardPosition: '50% 30%',
     heroPosition: '50% 27%',
     memories: 3
-  }
+  },
+  P008: {
+    folder: 'p008-javi-lozano',
+    prefix: 'p008',
+    cardPosition: '50% 30%',
+    heroPosition: '50% 27%',
+    memories: 3
+  },
+  P009: {
+    folder: 'p009-miguel-del-rio',
+    prefix: 'p009',
+    cardPosition: '50% 30%',
+    heroPosition: '50% 27%',
+    memories: 3
+  },
+  P011: {
+    folder: 'p011-oscar-garro',
+    prefix: 'p011',
+    cardPosition: '50% 30%',
+    heroPosition: '50% 27%',
+    memories: 3
+}
+
 };
 
 export function personMedia(personOrId) {

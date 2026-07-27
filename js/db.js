@@ -1,9 +1,30 @@
+function normalizeColumnName(value) {
+  return String(value ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "");
+}
+
 function firstValue(row, candidates) {
+  // Primero intentamos la coincidencia exacta.
   for (const key of candidates) {
-    if (Object.prototype.hasOwnProperty.call(row, key) && row[key] !== "") {
-      return row[key];
+    if (Object.prototype.hasOwnProperty.call(row, key) && String(row[key] ?? "").trim() !== "") {
+      return String(row[key]).trim();
     }
   }
+
+  // Después aceptamos pequeñas variaciones de cabecera de Google Sheets:
+  // guiones, espacios, guiones bajos, mayúsculas y tildes.
+  const normalizedEntries = new Map(
+    Object.entries(row).map(([key, value]) => [normalizeColumnName(key), value])
+  );
+
+  for (const key of candidates) {
+    const value = normalizedEntries.get(normalizeColumnName(key));
+    if (String(value ?? "").trim() !== "") return String(value).trim();
+  }
+
   return "";
 }
 
@@ -57,8 +78,17 @@ export function buildDatabase(raw) {
     base: firstValue(row, ["Base"]),
     pais: firstValue(row, ["País", "Pais"]),
     alojamiento: firstValue(row, ["Alojamiento"]),
+    urlAlojamiento: firstValue(row, ["URL_alojam", "URL alojamiento", "URL_Alojamiento"]),
     descripcion: firstValue(row, ["Descripción", "Descripcion"]),
-    track: firstValue(row, ["Track_principal"]),
+    tracks: [1, 2, 3].map((number) => ({
+      url: firstValue(row, [`Track${number}`]),
+      titulo: firstValue(row, [
+        `Track${number}_titulo`,
+        `Track${number}_título`,
+        `Track${number}-titulo`,
+        `Track${number}-título`
+      ])
+    })).filter((track) => track.url),
     album: firstValue(row, ["Álbum_fotos", "Album_fotos"]),
     video: firstValue(row, ["Vídeo", "Video"]),
     meteorologia: firstValue(row, ["Meteorología", "Meteorologia"]),

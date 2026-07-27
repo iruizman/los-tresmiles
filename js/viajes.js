@@ -1,6 +1,7 @@
 import { loadRawData } from "./data.js";
 import { buildDatabase } from "./db.js";
 import { escapeHtml, normalizeSearch, formatDate, tripUrl } from "./shared.js";
+import { travelMedia } from "./travel-media.js";
 
 let DB;
 
@@ -92,17 +93,21 @@ function filteredTrips() {
 function tripCard(trip) {
   const summits = uniqueSummits(trip);
   const people = peopleForTrip(trip);
+  const media = travelMedia(trip);
   const summitNames = summits.slice(0, 4).map((summit) => summit.nombre);
   const extra = summits.length - summitNames.length;
+  const visualStyle = media
+    ? ` style="background-image: linear-gradient(180deg, rgb(4 14 22 / 6%), rgb(4 14 22 / 62%)), url('${escapeHtml(media.cover)}'); background-position: ${escapeHtml(media.cardPosition)}"`
+    : "";
 
   return `
     <a class="trip-card" href="${tripUrl(trip)}">
-      <div class="trip-card-visual">
+      <div class="trip-card-visual${media ? " has-photo" : ""}"${visualStyle}>
         <span class="trip-year">${escapeHtml(tripYear(trip) || "—")}</span>
-        <svg viewBox="0 0 240 120" aria-hidden="true">
+        ${media ? "" : `<svg viewBox="0 0 240 120" aria-hidden="true">
           <path d="M2 111 55 39l29 39 22-28 31 36 24-31 77 56H2Z"/>
           <path d="m39 60 16-21 20 27m18 4 13-20 20 24m27 6 9-25 24 31"/>
-        </svg>
+        </svg>`}
       </div>
 
       <div class="trip-card-body">
