@@ -1,4 +1,5 @@
 const TRAVEL_MEDIA = {
+  V002: { file: 'v002-portada.jpg', cardPosition: '50% 50%', heroPosition: '50% 50%' },
   V003: { file: 'v003-portada.jpg', cardPosition: '50% 50%', heroPosition: '50% 50%' },
   V004: { file: 'v004-portada.jpg', cardPosition: '50% 50%', heroPosition: '50% 50%' },
   V005: { file: 'v005-portada.jpg', cardPosition: '50% 50%', heroPosition: '50% 50%' },
