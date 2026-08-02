@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Explorador y mapa de progreso del GR11 dentro de Los Tresmiles de Iñaki.">
+  <title>GR11 · Los Tresmiles de Iñaki</title>
+  <link rel="preconnect" href="https://unpkg.com">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="./css/styles.css">
+  <link rel="stylesheet" href="./css/cumbres.css">
+  <link rel="stylesheet" href="./css/gr11.css">
+</head>
+<body class="inner-page gr11-page" id="top">
+  <header class="site-header">
+    <a class="brand" href="index.html" aria-label="Ir al inicio">
+      <span class="brand-logo" aria-hidden="true"><svg viewBox="0 0 64 42"><path d="M3 37 20 9l10 16 8-12 23 24H3Z" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linejoin="round"/><path d="m15 25 5-7 5 8m9-5 4-5 6 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></span>
+      <span>Los Tresmiles de Iñaki</span>
+    </a>
+    <nav aria-label="Navegación principal">
+      <a href="index.html">Inicio</a><a href="index.html#estadisticas">Progreso</a><a href="index.html#mapa">Mapa</a><a href="viajes.html">Viajes</a><a href="cumbres.html">Cumbres</a><a href="personas.html">Personas</a><a class="active" aria-current="page" href="gr11.html">GR11</a>
+    </nav>
+  </header>
+
+  <div class="sr-only" aria-live="polite"><p id="gr11-status">Preparando los datos del GR11…</p></div>
+
+  <main>
+    <section class="gr11-hero">
+      <div class="gr11-hero-overlay"></div>
+      <div class="shell gr11-hero-content">
+        <nav class="breadcrumbs" aria-label="Migas de pan"><a href="index.html">Inicio</a><span>/</span><span>GR11</span></nav>
+        <p class="eyebrow">Del Cantábrico al Mediterráneo</p>
+        <h1>GR11</h1>
+        <p id="gr11-summary">Cargando la travesía…</p>
+        <div class="hero-actions">
+          <a class="primary-button" href="#mapa-gr11">Explorar el recorrido</a>
+          <a class="secondary-button" href="#etapas">Ver etapas</a>
+        </div>
+      </div>
+    </section>
+
+    <section id="mapa-gr11" class="gr11-map-section" aria-labelledby="gr11-map-title">
+      <div class="shell gr11-map-heading">
+        <div>
+          <p class="eyebrow">Mapa de progreso</p>
+          <h2 id="gr11-map-title">La travesía completa</h2>
+        </div>
+        <p class="gr11-map-intro">De mar a mar, etapa a etapa.</p>
+      </div>
+
+      <div class="gr11-map-frame">
+        <div id="gr11-map" aria-label="Mapa del GR11"></div>
+
+        <aside class="gr11-map-dashboard" aria-label="Progreso del GR11">
+          <div class="gr11-map-dashboard__title">
+            <span>GR11</span>
+            <small>Progreso</small>
+          </div>
+          <div id="gr11-stats" class="gr11-stats"></div>
+          <div class="gr11-map-legend" aria-label="Leyenda de estados">
+            <span><i class="realizada"></i>Realizada</span>
+            <span><i class="planificada"></i>Planificada</span>
+            <span><i class="pendiente"></i>Pendiente</span>
+          </div>
+        </aside>
+
+        <div id="gr11-map-message" class="gr11-map-message" role="button" tabindex="0" aria-label="Volver a la vista completa del recorrido">
+          <strong>Explora el recorrido</strong>
+          <span>Volver a la vista completa</span>
+          <span class="gr11-map-message__icon" aria-hidden="true">↺</span>
+        </div>
+      </div>
+    </section>
+
+    <section id="etapas" class="archive-section shell">
+      <div class="section-intro compact"><p class="eyebrow">Biblioteca</p><h2>Las 46 etapas</h2></div>
+      <div class="gr11-toolbar">
+        <label><span>Buscar</span><input id="gr11-search" type="search" placeholder="Bera, Góriz, E023…" autocomplete="off"></label>
+        <label><span>Estado</span><select id="gr11-state"><option value="">Todos</option><option value="realizada">Realizadas</option><option value="planificada">Planificadas</option><option value="pendiente">Pendientes</option></select></label>
+        <label><span>Dificultad</span><select id="gr11-difficulty"><option value="">Todas</option></select></label>
+        <button id="gr11-reset" class="reset-button" type="button">Limpiar</button>
+      </div>
+      <div class="archive-results-line"><p id="gr11-count"></p></div>
+      <div id="gr11-stage-grid" class="gr11-stage-grid" aria-live="polite"></div>
+    </section>
+  </main>
+
+  <footer class="site-footer shell"><p>Biblioteca GR11 conectada con Google Sheets.</p><a href="#top">Volver arriba ↑</a></footer>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script type="module" src="./js/gr11.js"></script>
+  <script src="./js/site-nav.js"></script>
+</body>
+</html>

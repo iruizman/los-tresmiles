@@ -5,7 +5,8 @@ const ICONS = {
   "Mapa": `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 6 6-3 6 3 6-3v15l-6 3-6-3-6 3Z"/><path d="M9 3v15"/><path d="M15 6v15"/></svg>`,
   "Viajes": `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19 9 8l3 5 3-8 5 14Z"/><path d="M2 19h20"/></svg>`,
   "Cumbres": `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m2 20 7-13 4 7 3-5 6 11Z"/><path d="m7 11 2-4 2 4"/></svg>`,
-  "Personas": `<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="10" r="2.5"/><path d="M3 20c0-4 2.6-7 6-7s6 3 6 7"/><path d="M14 15c.8-.7 1.8-1 3-1 2.5 0 4 2.2 4 5"/></svg>`
+  "Personas": `<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="10" r="2.5"/><path d="M3 20c0-4 2.6-7 6-7s6 3 6 7"/><path d="M14 15c.8-.7 1.8-1 3-1 2.5 0 4 2.2 4 5"/></svg>`,
+  "GR11": `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 18c4-7 7-10 10-9 3 1 4 6 8 2"/><path d="M4 5h5v5"/><path d="M15 16h6v5"/></svg>`
 };
 
 function labelFor(anchor) {

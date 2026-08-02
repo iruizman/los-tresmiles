@@ -1,4 +1,4 @@
-import { DATA_URLS } from "./config.js";
+import { DATA_URLS, GR11_DATA_URLS } from "./config.js";
 
 function parseCsv(text) {
   const rows = [];
@@ -61,6 +61,15 @@ async function fetchCsv(url, name) {
 
 export async function loadRawData() {
   const entries = Object.entries(DATA_URLS);
+  const loaded = await Promise.all(
+    entries.map(async ([key, url]) => [key, await fetchCsv(url, key)])
+  );
+  return Object.fromEntries(loaded);
+}
+
+
+export async function loadGr11RawData() {
+  const entries = Object.entries(GR11_DATA_URLS);
   const loaded = await Promise.all(
     entries.map(async ([key, url]) => [key, await fetchCsv(url, key)])
   );

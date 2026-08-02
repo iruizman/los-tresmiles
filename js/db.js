@@ -195,3 +195,102 @@ export function buildDatabase(raw) {
     warnings
   };
 }
+
+
+export function buildGr11Database(raw) {
+  const refugios = (raw.refugios ?? []).map((row) => ({
+    id: normalizeId(firstValue(row, ["ID_REFUGIO"])),
+    nombre: firstValue(row, ["NOMBRE", "Nombre"]),
+    tipo: firstValue(row, ["TIPO", "Tipo"]),
+    localidad: firstValue(row, ["LOCALIDAD", "Localidad"]),
+    provincia: firstValue(row, ["PROVINCIA", "Provincia"]),
+    comunidad: firstValue(row, ["COMUNIDAD", "Comunidad"]),
+    pais: firstValue(row, ["PAIS", "PAÍS", "País"]),
+    altitud: Number(firstValue(row, ["ALTITUD"])) || null,
+    latitud: normalizeCoordinate(firstValue(row, ["LATITUD"])),
+    longitud: normalizeCoordinate(firstValue(row, ["LONGITUD"])),
+    telefono: firstValue(row, ["TELEFONO", "TELÉFONO"]),
+    telefono2: firstValue(row, ["TELEFONO2", "TELEFONO_2"]),
+    email: firstValue(row, ["EMAIL"]),
+    web: firstValue(row, ["WEB"]),
+    reservasUrl: firstValue(row, ["RESERVAS_URL", "RESERVAS URL"]),
+    mapsUrl: firstValue(row, ["URL_MAPS", "URL MAPS"]),
+    plazas: firstValue(row, ["PLAZAS"]),
+    guardado: firstValue(row, ["GUARDADO"]),
+    abierto: firstValue(row, ["ABIERTO"]),
+    precioMp: firstValue(row, ["PRECIO_MP"]),
+    precioPc: firstValue(row, ["PRECIO_PC"]),
+    servicios: firstValue(row, ["SERVICIOS"]),
+    contacto: firstValue(row, ["CONTACTO"]),
+    observaciones: firstValue(row, ["OBSERVACIONES"]),
+    original: row
+  })).filter((item) => item.id);
+
+  const refugiosById = new Map(refugios.map((item) => [item.id, item]));
+
+  const jornadas = (raw.jornadas ?? []).map((row) => ({
+    id: normalizeId(firstValue(row, ["ID_JORNADA"])),
+    idCampana: normalizeId(firstValue(row, ["ID_CAMPANA"])),
+    numero: Number(firstValue(row, ["NUM_JORNADA"])) || null,
+    fecha: firstValue(row, ["FECHA"]),
+    idEtapaPlan: normalizeId(firstValue(row, ["ID_ETAPA_PLAN"])),
+    estado: firstValue(row, ["ESTADO"]),
+    idEtapaReal: normalizeId(firstValue(row, ["ID_ETAPA_REAL"])),
+    original: row
+  })).filter((item) => item.id || item.idEtapaPlan || item.idEtapaReal);
+
+  const completedWords = ["completada", "realizada", "completa"];
+  const plannedWords = ["planificada", "preparada", "en curso", "en ruta"];
+  const normalized = (value) => String(value ?? "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+
+  function statusForStage(stageId) {
+    const related = jornadas.filter((j) => j.idEtapaPlan === stageId || j.idEtapaReal === stageId);
+    if (related.some((j) => completedWords.some((word) => normalized(j.estado).includes(word)))) return "realizada";
+    if (related.some((j) => plannedWords.some((word) => normalized(j.estado).includes(word)))) return "planificada";
+    return "pendiente";
+  }
+
+  const etapas = (raw.etapas ?? []).map((row) => {
+    const id = normalizeId(firstValue(row, ["ID_ETAPA"]));
+    const idRefugio = normalizeId(firstValue(row, ["ID_REFUGIO_FINAL"]));
+    return {
+      id,
+      numero: Number(firstValue(row, ["NUM_ETAPA"])) || null,
+      nombre: firstValue(row, ["NOMBRE", "Nombre"]),
+      inicio: firstValue(row, ["INICIO"]),
+      altitudInicio: Number(firstValue(row, ["ALTITUD_INICIO"])) || null,
+      provinciaInicio: firstValue(row, ["PROVINCIA_INICIO"]),
+      final: firstValue(row, ["FINAL"]),
+      altitudFinal: Number(firstValue(row, ["ALTITUD_FINAL"])) || null,
+      provinciaFinal: firstValue(row, ["PROVINCIA_FINAL"]),
+      distanciaKm: normalizeCoordinate(firstValue(row, ["DISTANCIA_KM"])),
+      desnivelPos: Number(firstValue(row, ["DESNIVEL_POS"])) || null,
+      desnivelNeg: Number(firstValue(row, ["DESNIVEL_NEG"])) || null,
+      tiempoEstimado: firstValue(row, ["TIEMPO_ESTIMADO"]),
+      dificultad: firstValue(row, ["DIFICULTAD"]),
+      idRefugioFinal: idRefugio,
+      trackReferencia: firstValue(row, ["TRACK_REFERENCIA"]),
+      mapaUrl: firstValue(row, ["MAPA_URL"]),
+      descripcion: firstValue(row, ["DESCRIPCION", "DESCRIPCIÓN"]),
+      observaciones: firstValue(row, ["OBSERVACIONES"]),
+      refugio: refugiosById.get(idRefugio) ?? null,
+      estado: statusForStage(id),
+      original: row
+    };
+  }).filter((item) => item.id).sort((a, b) => (a.numero ?? 999) - (b.numero ?? 999));
+
+  const etapasById = new Map(etapas.map((item) => [item.id, item]));
+  return {
+    etapas, refugios, jornadas,
+    campanas: raw.campanas ?? [],
+    jornadasPersonas: raw.jornadasPersonas ?? [],
+    indexes: { etapasById, refugiosById },
+    stats: {
+      total: etapas.length,
+      realizadas: etapas.filter((item) => item.estado === "realizada").length,
+      planificadas: etapas.filter((item) => item.estado === "planificada").length,
+      pendientes: etapas.filter((item) => item.estado === "pendiente").length,
+      refugios: refugios.length
+    }
+  };
+}

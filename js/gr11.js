@@ -1,0 +1,299 @@
+import { loadGr11RawData } from "./data.js";
+import { buildGr11Database } from "./db.js";
+import { escapeHtml, etapaUrl, gpxUrl, statusLabel, numberText } from "./gr11-shared.js";
+
+let DB;
+let map;
+let refugeLayer;
+let trackLayer;
+let endpointLayer;
+let fullRouteBounds;
+const layerByStageId = new Map();
+let selectedStageId = "";
+
+const els = {
+  status: document.querySelector("#gr11-status"),
+  summary: document.querySelector("#gr11-summary"),
+  stats: document.querySelector("#gr11-stats"),
+  grid: document.querySelector("#gr11-stage-grid"),
+  count: document.querySelector("#gr11-count"),
+  search: document.querySelector("#gr11-search"),
+  state: document.querySelector("#gr11-state"),
+  difficulty: document.querySelector("#gr11-difficulty"),
+  reset: document.querySelector("#gr11-reset"),
+  mapMessage: document.querySelector("#gr11-map-message")
+};
+
+function initMap() {
+  map = L.map("gr11-map", { zoomControl: true, scrollWheelZoom: true });
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 18,
+    attribution: "&copy; OpenStreetMap"
+  }).addTo(map);
+  refugeLayer = L.layerGroup().addTo(map);
+  trackLayer = L.layerGroup().addTo(map);
+  endpointLayer = L.layerGroup().addTo(map);
+
+  const isNarrow = window.matchMedia("(max-width: 700px)").matches;
+  map.setView([42.64, 0.72], isNarrow ? 7 : 8);
+  requestAnimationFrame(() => map.invalidateSize());
+}
+
+function trackColor(status) {
+  return { realizada: "#1f6b48", planificada: "#d79a22", pendiente: "#c4473d" }[status] ?? "#c4473d";
+}
+
+function defaultTrackStyle(stage) {
+  return { color: trackColor(stage.estado), weight: 5, opacity: 0.82, lineCap: "round", lineJoin: "round" };
+}
+
+function parseTrackSegments(xml) {
+  const segments = [...xml.querySelectorAll("trkseg")]
+    .map((segment) => [...segment.querySelectorAll("trkpt")]
+      .map((point) => [Number(point.getAttribute("lat")), Number(point.getAttribute("lon"))])
+      .filter(([lat, lon]) => Number.isFinite(lat) && Number.isFinite(lon)))
+    .filter((points) => points.length > 1);
+
+  if (segments.length) return segments;
+
+  const route = [...xml.querySelectorAll("rtept")]
+    .map((point) => [Number(point.getAttribute("lat")), Number(point.getAttribute("lon"))])
+    .filter(([lat, lon]) => Number.isFinite(lat) && Number.isFinite(lon));
+  return route.length > 1 ? [route] : [];
+}
+
+function popupHtml(stage) {
+  return `<div class="gr11-map-popup">
+    <span class="gr11-status ${stage.estado}">${statusLabel(stage.estado)}</span>
+    <strong>${escapeHtml(stage.id)} · ${escapeHtml(stage.nombre)}</strong>
+    <span>${escapeHtml(stage.inicio)} → ${escapeHtml(stage.final)}</span>
+    <small>${numberText(stage.distanciaKm, " km")} · ${numberText(stage.desnivelPos, " m+")} · ${escapeHtml(stage.tiempoEstimado || "—")}</small>
+    <a href="${etapaUrl(stage)}">Ver ficha completa →</a>
+  </div>`;
+}
+
+async function loadTrack(stage) {
+  const url = gpxUrl(stage.trackReferencia);
+  if (!url) return null;
+
+  try {
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const xml = new DOMParser().parseFromString(await response.text(), "application/xml");
+    if (xml.querySelector("parsererror")) throw new Error("GPX no válido");
+
+    const segments = parseTrackSegments(xml);
+    if (!segments.length) throw new Error("GPX sin puntos de track");
+
+    const group = L.featureGroup().addTo(trackLayer);
+    segments.forEach((points) => {
+      const line = L.polyline(points, defaultTrackStyle(stage)).addTo(group);
+      line.on("click", (event) => {
+        L.DomEvent.stopPropagation(event);
+        selectStage(stage.id, { fit: false, openPopup: true });
+      });
+      line.on("mouseover", () => highlightStage(stage.id));
+      line.on("mouseout", () => { if (selectedStageId !== stage.id) resetTrackStyles(); });
+    });
+
+    group.bindTooltip(`${stage.id} · ${stage.nombre}`, { sticky: true });
+    group.bindPopup(popupHtml(stage), { maxWidth: 320, className: "gr11-leaflet-popup" });
+    layerByStageId.set(stage.id, group);
+    return { bounds: group.getBounds(), first: segments[0][0], last: segments.at(-1).at(-1) };
+  } catch (error) {
+    console.warn(`${stage.id}: no se pudo cargar ${url}`, error);
+    return null;
+  }
+}
+
+function renderEndpoints(loadedTracks) {
+  endpointLayer.clearLayers();
+  if (!loadedTracks.length) return;
+  const first = loadedTracks[0];
+  const last = loadedTracks.at(-1);
+  const markerOptions = { radius: 7, color: "#173d30", fillColor: "#fff", fillOpacity: 1, weight: 3 };
+  L.circleMarker(first.first, markerOptions).bindTooltip("Inicio · Cabo Higuer", { permanent: false }).addTo(endpointLayer);
+  L.circleMarker(last.last, markerOptions).bindTooltip("Final · Cap de Creus", { permanent: false }).addTo(endpointLayer);
+}
+
+async function renderTracks() {
+  trackLayer.clearLayers();
+  endpointLayer.clearLayers();
+  layerByStageId.clear();
+  fullRouteBounds = null;
+
+  const results = await Promise.all(DB.etapas.map(loadTrack));
+  const loaded = results.filter(Boolean);
+  if (loaded.length) {
+    fullRouteBounds = loaded.reduce((acc, item) => acc.extend(item.bounds), L.latLngBounds(loaded[0].bounds));
+    map.fitBounds(fullRouteBounds, { padding: [32, 32] });
+    renderEndpoints(loaded);
+  }
+  return loaded.length;
+}
+
+function renderStats() {
+  const s = DB.stats;
+  els.stats.innerHTML = [
+    [s.total, "Etapas"],
+    [s.realizadas, "Realizadas"],
+    [s.planificadas, "Planificadas"],
+    [s.pendientes, "Pendientes"]
+  ].map(([value, label]) => `<article class="gr11-stat"><strong>${value}</strong><span>${label}</span></article>`).join("");
+  els.summary.textContent = `${s.total} etapas entre el Cantábrico y el Mediterráneo.`;
+}
+
+function populateFilters() {
+  [...new Set(DB.etapas.map((item) => item.dificultad).filter(Boolean))]
+    .sort((a, b) => a.localeCompare(b, "es"))
+    .forEach((value) => els.difficulty.insertAdjacentHTML("beforeend", `<option value="${escapeHtml(value)}">${escapeHtml(value)}</option>`));
+}
+
+function filteredStages() {
+  const q = els.search.value.trim().toLowerCase();
+  return DB.etapas.filter((stage) => {
+    const haystack = `${stage.id} ${stage.nombre} ${stage.inicio} ${stage.final}`.toLowerCase();
+    return (!q || haystack.includes(q))
+      && (!els.state.value || stage.estado === els.state.value)
+      && (!els.difficulty.value || stage.dificultad === els.difficulty.value);
+  });
+}
+
+function stageCard(stage) {
+  return `
+    <article class="gr11-stage-card ${selectedStageId === stage.id ? "is-selected" : ""}" data-stage-id="${stage.id}">
+      <div class="gr11-stage-card__top">
+        <span class="gr11-stage-number">${escapeHtml(stage.id)}</span>
+        <span class="gr11-status ${stage.estado}">${statusLabel(stage.estado)}</span>
+      </div>
+      <h3>${escapeHtml(stage.nombre)}</h3>
+      <p class="gr11-route">${escapeHtml(stage.inicio)} <span aria-hidden="true">→</span> ${escapeHtml(stage.final)}</p>
+      <div class="gr11-stage-facts">
+        <span><strong>${numberText(stage.distanciaKm, " km")}</strong> distancia</span>
+        <span><strong>${numberText(stage.desnivelPos, " m+")}</strong> desnivel</span>
+        <span><strong>${escapeHtml(stage.tiempoEstimado || "—")}</strong> tiempo</span>
+      </div>
+      <a class="gr11-card-link" href="${etapaUrl(stage)}">Ver ficha completa →</a>
+    </article>`;
+}
+
+function renderStages() {
+  const stages = filteredStages();
+  els.count.textContent = `${stages.length} ${stages.length === 1 ? "etapa" : "etapas"}`;
+  els.grid.innerHTML = stages.map(stageCard).join("") || `<p class="archive-empty">No hay etapas que coincidan con los filtros.</p>`;
+  els.grid.querySelectorAll("[data-stage-id]").forEach((card) => {
+    card.addEventListener("mouseenter", () => highlightStage(card.dataset.stageId));
+    card.addEventListener("mouseleave", resetTrackStyles);
+    card.addEventListener("focusin", () => highlightStage(card.dataset.stageId));
+    card.addEventListener("click", (event) => {
+      if (event.target.closest("a")) return;
+      selectStage(card.dataset.stageId);
+    });
+  });
+}
+
+function resetTrackStyles() {
+  layerByStageId.forEach((group, id) => {
+    const stage = DB.indexes.etapasById.get(id);
+    group.setStyle(id === selectedStageId
+      ? { ...defaultTrackStyle(stage), weight: 8, opacity: 1 }
+      : defaultTrackStyle(stage));
+  });
+}
+
+function highlightStage(id) {
+  const group = layerByStageId.get(id);
+  if (!group) return;
+  resetTrackStyles();
+  group.setStyle({ weight: 8, opacity: 1 });
+  group.bringToFront();
+}
+
+function selectStage(id, options = {}) {
+  const { fit = true, openPopup = false } = options;
+  selectedStageId = id;
+  const stage = DB.indexes.etapasById.get(id);
+  if (!stage) return;
+
+  document.querySelectorAll(".gr11-stage-card").forEach((card) => card.classList.toggle("is-selected", card.dataset.stageId === id));
+
+  resetTrackStyles();
+  const group = layerByStageId.get(id);
+  if (group) {
+    group.setStyle({ weight: 8, opacity: 1 });
+    group.bringToFront();
+    if (fit) map.fitBounds(group.getBounds(), { padding: [42, 42], maxZoom: 12 });
+    if (openPopup) group.openPopup(group.getBounds().getCenter());
+    return;
+  }
+
+  const refuge = stage.refugio;
+  if (refuge?.latitud !== null && refuge?.longitud !== null) {
+    map.flyTo([refuge.latitud, refuge.longitud], 11, { duration: 0.6 });
+  }
+}
+
+function renderRefuges() {
+  refugeLayer.clearLayers();
+  DB.refugios.forEach((refuge) => {
+    if (refuge.latitud === null || refuge.longitud === null) return;
+    const marker = L.circleMarker([refuge.latitud, refuge.longitud], {
+      radius: 5.5, color: "#1f4d3a", fillColor: "#f2a65a", fillOpacity: 0.9, weight: 2
+    }).addTo(refugeLayer);
+    marker.bindPopup(`<strong>${escapeHtml(refuge.nombre)}</strong><br>${escapeHtml(refuge.tipo || "Alojamiento")} · ${numberText(refuge.altitud, " m")}`);
+  });
+}
+
+function resetMapView() {
+  selectedStageId = "";
+  resetTrackStyles();
+  document.querySelectorAll(".gr11-stage-card").forEach((card) => card.classList.remove("is-selected"));
+  if (fullRouteBounds) map.fitBounds(fullRouteBounds, { padding: [32, 32] });
+  map.closePopup();
+}
+
+function bind() {
+  [els.search, els.state, els.difficulty].forEach((control) => control.addEventListener("input", renderStages));
+  els.mapMessage.addEventListener("click", resetMapView);
+  els.mapMessage.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      resetMapView();
+    }
+  });
+  els.reset.addEventListener("click", () => {
+    els.search.value = "";
+    els.state.value = "";
+    els.difficulty.value = "";
+    resetMapView();
+    renderStages();
+  });
+}
+
+async function start() {
+  try {
+    initMap();
+    const raw = await loadGr11RawData();
+    DB = buildGr11Database(raw);
+    renderStats();
+    populateFilters();
+    renderRefuges();
+    const tracksLoaded = await renderTracks();
+    renderStages();
+    bind();
+
+    if (!tracksLoaded) {
+      els.mapMessage.querySelector("span").textContent = "No se ha podido cargar ningún GPX.";
+    } else {
+      els.status.textContent = `${tracksLoaded} de ${DB.etapas.length} tracks GPX cargados.`;
+      els.mapMessage.querySelector("span").textContent = `${tracksLoaded} etapas dibujadas. Selecciona una para explorarla.`;
+    }
+  } catch (error) {
+    console.error(error);
+    els.status.textContent = "No se pudieron cargar los datos del GR11.";
+    els.summary.textContent = "Comprueba que las hojas de Google Sheets estén publicadas o accesibles.";
+    els.grid.innerHTML = `<p class="archive-empty">${escapeHtml(error.message)}</p>`;
+  }
+}
+
+start();

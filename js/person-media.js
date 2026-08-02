@@ -54,6 +54,20 @@ const PERSON_MEDIA = {
     cardPosition: '50% 30%',
     heroPosition: '50% 27%',
     memories: 3
+    },
+  P006: {
+    folder: 'p006-roberto-fernandez',
+    prefix: 'p006',
+    cardPosition: '50% 30%',
+    heroPosition: '50% 27%',
+    memories: 3
+    },
+  P007: {
+    folder: 'p007-raul-cortes',
+    prefix: 'p007',
+    cardPosition: '50% 30%',
+    heroPosition: '50% 27%',
+    memories: 3
 }
 
 };
