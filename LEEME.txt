@@ -1,0 +1,21 @@
+SPRINT 005.2.2 — BASE CAMP
+
+Copia todo el contenido de esta carpeta sobre la raíz del proyecto y acepta la sustitución.
+
+Archivos nuevos:
+- base-camp.html
+- js/firebase-config.js
+- js/auth.js
+- js/auth-ui.js
+- js/base-camp.js
+- css/base-camp.css
+
+Archivos actualizados:
+- todos los HTML existentes
+- css/styles.css
+
+Antes de probar:
+1. Google debe estar habilitado en Firebase Authentication.
+2. Deben estar autorizados localhost y los-tresmiles.pages.dev.
+3. Prueba local mediante Live Server, no abriendo el HTML con file://.
+4. Tras subir a GitHub, espera el despliegue de Cloudflare Pages.

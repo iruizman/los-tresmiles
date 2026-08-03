@@ -274,3 +274,112 @@ body.gr11-map-open{overflow:hidden}
 .gr11-gpx-source-note{margin:.8rem 0 0;color:var(--muted);font-size:.8rem;line-height:1.45}
 @media(max-width:1100px){.gr11-detail-stats{grid-template-columns:repeat(4,minmax(0,1fr))}.gr11-detail-stats>div{border-bottom:1px solid rgba(255,255,255,.2)}.gr11-detail-stats>div:nth-child(4n){border-right:0}}
 @media(max-width:620px){.gr11-detail-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.gr11-detail-stats>div:nth-child(4n){border-right:1px solid rgba(255,255,255,.2)}.gr11-detail-stats>div:nth-child(even){border-right:0}}
+
+/* Sprint 005.1 · planificador de campañas */
+.gr11-campaigns-section{padding-top:72px;padding-bottom:18px}
+.gr11-campaigns-heading{display:flex;justify-content:space-between;align-items:flex-end;gap:32px;padding-bottom:24px;border-bottom:1px solid var(--line)}
+.gr11-campaigns-heading h2{margin:.12em 0 .28em;font-size:clamp(2rem,4vw,3.5rem)}
+.gr11-campaigns-heading p:last-child{max-width:680px;margin:0;color:var(--muted)}
+.gr11-campaigns-heading .primary-button{border:0;cursor:pointer;white-space:nowrap}
+.gr11-campaign-list{padding-top:22px}
+.gr11-campaign-empty{display:flex;justify-content:space-between;align-items:center;gap:28px;padding:25px 28px;border:1px solid var(--line);background:rgba(255,255,255,.42)}
+.gr11-campaign-empty strong{display:block;font-size:1.1rem}
+.gr11-campaign-empty p{margin:.38em 0 0;color:var(--muted)}
+.gr11-campaign-empty .secondary-button{cursor:pointer}
+.gr11-campaign-card{padding:24px 26px;border:1px solid var(--line);background:#fff}
+.gr11-campaign-card__top{display:flex;justify-content:space-between;align-items:center;gap:16px}
+.gr11-campaign-card__top small{color:var(--muted)}
+.gr11-campaign-card h3{margin:.7em 0 .2em;font-size:1.6rem}
+.gr11-campaign-card>p{margin:0;color:var(--muted)}
+.gr11-campaign-card__route{display:flex;align-items:center;gap:12px;margin:18px 0;color:var(--ink)}
+.gr11-campaign-card__route span{color:var(--gr11-red)}
+.gr11-campaign-card__facts{display:flex;gap:28px;flex-wrap:wrap;padding-top:16px;border-top:1px solid var(--line)}
+.gr11-campaign-card__facts span{display:flex;flex-direction:column;color:var(--muted);font-size:.75rem;text-transform:uppercase;letter-spacing:.05em}
+.gr11-campaign-card__facts strong{color:var(--ink);font-size:1rem;text-transform:none;letter-spacing:0}
+body.gr11-campaign-open{overflow:hidden}
+.gr11-campaign-modal[hidden]{display:none}
+.gr11-campaign-modal{position:fixed;inset:0;z-index:12000;display:grid;place-items:center;padding:22px}
+.gr11-campaign-modal__backdrop{position:absolute;inset:0;background:rgba(8,24,18,.78);backdrop-filter:blur(4px)}
+.gr11-campaign-dialog{position:relative;z-index:1;width:min(1040px,100%);max-height:min(900px,calc(100vh - 44px));overflow:auto;background:var(--paper,#f8f5ee);box-shadow:0 24px 80px rgba(0,0,0,.32)}
+.gr11-campaign-dialog__header{position:sticky;top:0;z-index:4;display:flex;justify-content:space-between;align-items:center;gap:24px;padding:24px 30px 18px;background:var(--paper,#f8f5ee);border-bottom:1px solid var(--line)}
+.gr11-campaign-dialog__header h2{margin:.12em 0 0;font-size:clamp(1.8rem,4vw,3rem)}
+.gr11-campaign-close{display:grid;place-items:center;width:42px;height:42px;border:1px solid var(--line);background:#fff;color:var(--ink);font-size:1.65rem;cursor:pointer}
+.gr11-campaign-close:hover{background:var(--ink);color:#fff}
+.gr11-campaign-progress{display:grid;grid-template-columns:repeat(5,1fr);gap:0;padding:18px 30px 0}
+.gr11-campaign-progress span{position:relative;display:grid;place-items:center;width:32px;height:32px;margin:auto;border:1px solid var(--line);border-radius:999px;background:#fff;color:var(--muted);font-weight:800}
+.gr11-campaign-progress span:not(:last-child):after{content:"";position:absolute;left:31px;top:15px;width:calc((min(1040px,100vw - 44px) - 120px)/5 - 1px);height:1px;background:var(--line)}
+.gr11-campaign-progress span.is-active,.gr11-campaign-progress span.is-complete{background:var(--gr11-green);border-color:var(--gr11-green);color:#fff}
+.gr11-campaign-form{padding:26px 30px 30px}
+.gr11-campaign-step{min-height:300px;animation:gr11-campaign-in .22s ease}
+.gr11-campaign-step[hidden]{display:none}
+.gr11-campaign-step h3{margin:.25em 0 1em;font-size:clamp(1.6rem,3vw,2.5rem)}
+.gr11-campaign-kicker{margin:0;color:var(--gr11-red);font-weight:800;text-transform:uppercase;letter-spacing:.08em;font-size:.72rem}
+.gr11-campaign-field{display:grid;gap:8px;max-width:680px}
+.gr11-campaign-field span{font-weight:800}
+.gr11-campaign-field input{width:100%;padding:15px 16px;border:1px solid var(--line);background:#fff;color:var(--ink);font:inherit;font-size:1.05rem}
+.gr11-campaign-field input:focus{outline:2px solid var(--gr11-green);outline-offset:2px}
+.gr11-campaign-field--small{max-width:240px;margin-top:18px}
+.gr11-campaign-help{color:var(--muted)}
+.gr11-campaign-stage-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;max-height:380px;margin-top:14px;overflow:auto;padding-right:4px}
+.gr11-campaign-stage-option{display:grid;gap:5px;padding:14px 15px;border:1px solid var(--line);background:#fff;color:var(--ink);text-align:left;cursor:pointer}
+.gr11-campaign-stage-option:hover,.gr11-campaign-stage-option:focus-visible{border-color:var(--gr11-green);outline:none}
+.gr11-campaign-stage-option.is-selected{border:2px solid var(--gr11-green);background:rgba(31,107,72,.07)}
+.gr11-campaign-stage-option span{display:flex;gap:10px;align-items:baseline}
+.gr11-campaign-stage-option span strong{color:var(--gr11-red);font-size:.78rem}
+.gr11-campaign-stage-option small{color:var(--muted)}
+.gr11-campaign-no-results{grid-column:1/-1;padding:22px;border:1px dashed var(--line);color:var(--muted)}
+.gr11-campaign-days{display:flex;flex-wrap:wrap;gap:10px}
+.gr11-campaign-days button{min-width:90px;padding:13px 16px;border:1px solid var(--line);background:#fff;color:var(--ink);font:inherit;font-weight:800;cursor:pointer}
+.gr11-campaign-days button:hover,.gr11-campaign-days button.is-selected{border-color:var(--gr11-green);background:var(--gr11-green);color:#fff}
+.gr11-campaign-warning{max-width:680px;margin:16px 0 0;padding:12px 14px;border-left:3px solid #d79a22;background:rgba(215,154,34,.1)}
+.gr11-campaign-preview-heading{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;margin-bottom:18px}
+.gr11-campaign-preview-heading h3{margin:0}
+.gr11-campaign-preview-heading p{margin:.4em 0 0;color:var(--muted)}
+.gr11-campaign-loading{color:var(--gr11-green);font-weight:800}
+.gr11-campaign-preview-placeholder{padding:38px;border:1px dashed var(--line);text-align:center;color:var(--muted)}
+.gr11-campaign-preview-summary{display:grid;grid-template-columns:1fr 1fr;gap:1px;margin-bottom:14px;background:var(--line);border:1px solid var(--line)}
+.gr11-campaign-preview-summary>div{display:grid;gap:4px;padding:14px 16px;background:#fff}
+.gr11-campaign-preview-summary span{color:var(--muted);font-size:.72rem;text-transform:uppercase;letter-spacing:.06em}
+.gr11-campaign-itinerary{display:grid;gap:10px}
+.gr11-campaign-day{display:grid;grid-template-columns:120px minmax(0,1fr) minmax(230px,.8fr);gap:0;border:1px solid var(--line);background:#fff}
+.gr11-campaign-day__date{display:flex;flex-direction:column;justify-content:center;padding:18px;border-right:1px solid var(--line);background:#173d30;color:#fff}
+.gr11-campaign-day__date span{font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:#f3a35d}
+.gr11-campaign-day__date strong{margin-top:5px;font-size:1.05rem}
+.gr11-campaign-day__main{padding:16px 18px}
+.gr11-campaign-day__id{color:var(--gr11-red);font-weight:800;font-size:.74rem}
+.gr11-campaign-day h4{margin:.2em 0 .15em;font-size:1.08rem}
+.gr11-campaign-day__main p{margin:0;color:var(--muted)}
+.gr11-campaign-day__facts{display:flex;gap:16px;flex-wrap:wrap;margin-top:12px;font-size:.82rem;font-weight:800}
+.gr11-campaign-day__stay{display:flex;flex-direction:column;justify-content:center;gap:4px;padding:16px 18px;border-left:1px solid var(--line);background:rgba(31,107,72,.045)}
+.gr11-campaign-day__stay>span:first-child{color:var(--muted);font-size:.7rem;text-transform:uppercase;letter-spacing:.06em}
+.gr11-campaign-day__stay small{color:var(--muted)}
+.gr11-campaign-day__stay a{margin-top:5px;color:var(--gr11-green);font-weight:800;font-size:.82rem}
+.gr11-campaign-totals{display:grid;grid-template-columns:repeat(5,1fr);margin-top:14px;border:1px solid var(--line);background:#fff}
+.gr11-campaign-totals>div{display:flex;min-height:76px;flex-direction:column;justify-content:center;padding:12px 14px;border-right:1px solid var(--line)}
+.gr11-campaign-totals>div:last-child{border-right:0}
+.gr11-campaign-totals strong{font-size:1.05rem}
+.gr11-campaign-totals span{margin-top:4px;color:var(--muted);font-size:.69rem;text-transform:uppercase;letter-spacing:.05em}
+.gr11-campaign-actions{position:sticky;bottom:-30px;z-index:3;display:flex;justify-content:space-between;gap:20px;margin:28px -30px -30px;padding:18px 30px;background:var(--paper,#f8f5ee);border-top:1px solid var(--line)}
+.gr11-campaign-actions>div{display:flex;gap:10px;margin-left:auto}
+.gr11-campaign-actions button{cursor:pointer}
+.gr11-campaign-cancel{padding:10px 14px;border:0;background:transparent;color:var(--muted);font:inherit;font-weight:700}
+@keyframes gr11-campaign-in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@media(max-width:760px){
+  .gr11-campaigns-heading,.gr11-campaign-empty{align-items:flex-start;flex-direction:column}
+  .gr11-campaign-dialog{max-height:100vh;height:100%;width:100%}
+  .gr11-campaign-modal{padding:0}
+  .gr11-campaign-dialog__header{padding:18px 18px 14px}
+  .gr11-campaign-progress{padding:14px 18px 0}
+  .gr11-campaign-progress span:not(:last-child):after{width:calc((100vw - 100px)/5)}
+  .gr11-campaign-form{padding:22px 18px 24px}
+  .gr11-campaign-stage-options{grid-template-columns:1fr;max-height:44vh}
+  .gr11-campaign-preview-summary{grid-template-columns:1fr}
+  .gr11-campaign-day{grid-template-columns:88px 1fr}
+  .gr11-campaign-day__stay{grid-column:1/-1;border-left:0;border-top:1px solid var(--line)}
+  .gr11-campaign-totals{grid-template-columns:repeat(2,1fr)}
+  .gr11-campaign-totals>div{border-bottom:1px solid var(--line)}
+  .gr11-campaign-totals>div:nth-child(even){border-right:0}
+  .gr11-campaign-totals>div:last-child{grid-column:1/-1;border-bottom:0}
+  .gr11-campaign-actions{bottom:-24px;margin:22px -18px -24px;padding:14px 18px}
+  .gr11-campaign-actions .secondary-button,.gr11-campaign-actions .primary-button{padding:10px 12px}
+}

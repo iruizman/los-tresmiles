@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Área privada de planificación de Los Tresmiles de Iñaki.">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Base Camp · Los Tresmiles de Iñaki</title>
+  <link rel="stylesheet" href="./css/styles.css">
+  <link rel="stylesheet" href="./css/base-camp.css">
+</head>
+<body class="inner-page basecamp-page">
+  <header class="site-header">
+    <a class="brand" href="index.html" aria-label="Ir al inicio">
+      <span class="brand-logo" aria-hidden="true">
+        <svg viewBox="0 0 64 42">
+          <path d="M3 37 20 9l10 16 8-12 23 24H3Z" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linejoin="round"/>
+          <path d="m15 25 5-7 5 8m9-5 4-5 6 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+        </svg>
+      </span>
+      <span>Los Tresmiles de Iñaki</span>
+    </a>
+    <nav aria-label="Navegación principal">
+      <a href="index.html">Inicio</a>
+      <a href="index.html#estadisticas">Progreso</a>
+      <a href="index.html#mapa">Mapa</a>
+      <a href="viajes.html">Viajes</a>
+      <a href="cumbres.html">Cumbres</a>
+      <a href="personas.html">Personas</a>
+      <a href="gr11.html">GR11</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="basecamp-hero">
+      <div class="shell basecamp-hero-inner">
+        <div>
+          <nav class="breadcrumbs" aria-label="Migas de pan">
+            <a href="index.html">Inicio</a><span>/</span><span>Base Camp</span>
+          </nav>
+          <p class="eyebrow">Área privada</p>
+          <h1>Base Camp</h1>
+          <p>Tu centro de planificación, seguimiento y memoria de montaña.</p>
+        </div>
+        <div class="basecamp-mark" aria-hidden="true">🏕</div>
+      </div>
+    </section>
+
+    <section class="basecamp-shell shell">
+      <div id="basecamp-loading" class="basecamp-state">
+        <span class="basecamp-spinner" aria-hidden="true"></span>
+        <p>Comprobando la sesión…</p>
+      </div>
+
+      <div id="basecamp-locked" class="basecamp-state" hidden>
+        <span class="basecamp-state-icon" aria-hidden="true">🔒</span>
+        <p class="eyebrow">Acceso privado</p>
+        <h2>Entra en Base Camp</h2>
+        <p>Identifícate con la cuenta de Google autorizada para gestionar tus campañas.</p>
+        <button class="primary-button basecamp-login" type="button" data-basecamp-login>Acceder con Google</button>
+        <p id="basecamp-auth-error" class="basecamp-error" aria-live="polite"></p>
+      </div>
+
+      <div id="basecamp-denied" class="basecamp-state" hidden>
+        <span class="basecamp-state-icon" aria-hidden="true">⛔</span>
+        <p class="eyebrow">Acceso restringido</p>
+        <h2>Esta cuenta no está autorizada</h2>
+        <p>Has iniciado sesión como <strong data-user-email></strong>, pero esa cuenta todavía no tiene acceso a Base Camp.</p>
+        <button class="secondary-button" type="button" data-basecamp-signout>Cerrar sesión</button>
+      </div>
+
+      <div id="basecamp-content" hidden>
+        <header class="basecamp-welcome">
+          <div>
+            <p class="eyebrow">Centro de operaciones</p>
+            <h2>Hola, <span data-user-name>Iñaki</span></h2>
+            <p>Tu espacio para convertir el archivo de montaña en planes reales.</p>
+          </div>
+          <div class="basecamp-account-card">
+            <span data-user-role>Administrador</span>
+            <strong data-user-email></strong>
+          </div>
+        </header>
+
+        <div class="basecamp-modules">
+          <a class="basecamp-module basecamp-module--active" href="gr11.html#campanas">
+            <span class="basecamp-module-icon" aria-hidden="true">🗓</span>
+            <span class="basecamp-module-copy">
+              <small>Disponible</small>
+              <strong>Campañas GR11</strong>
+              <span>Crear y revisar la planificación de tus próximas jornadas.</span>
+            </span>
+            <span aria-hidden="true">→</span>
+          </a>
+
+          <article class="basecamp-module is-coming">
+            <span class="basecamp-module-icon" aria-hidden="true">📖</span>
+            <span class="basecamp-module-copy">
+              <small>Próximamente</small>
+              <strong>Diario de expedición</strong>
+              <span>Notas, meteorología, incidencias y recuerdos de cada jornada.</span>
+            </span>
+          </article>
+
+          <article class="basecamp-module is-coming">
+            <span class="basecamp-module-icon" aria-hidden="true">🎒</span>
+            <span class="basecamp-module-copy">
+              <small>Próximamente</small>
+              <strong>Material y reservas</strong>
+              <span>Preparación de mochila, alojamientos y control de reservas.</span>
+            </span>
+          </article>
+
+          <article class="basecamp-module is-coming">
+            <span class="basecamp-module-icon" aria-hidden="true">⚙</span>
+            <span class="basecamp-module-copy">
+              <small>Próximamente</small>
+              <strong>Administración</strong>
+              <span>Gestión segura de datos, usuarios y contenidos del archivo.</span>
+            </span>
+          </article>
+        </div>
+
+        <div class="basecamp-security-note">
+          <strong>Primera versión segura</strong>
+          <p>La sesión ya está protegida con Firebase. La escritura real de campañas seguirá desactivada hasta añadir validación del lado del servidor.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer shell">
+    <p>Base Camp · Área privada de Los Tresmiles de Iñaki.</p>
+    <a href="index.html">Volver al archivo público ↑</a>
+  </footer>
+
+  <script src="./js/site-nav.js"></script>
+  <script type="module" src="./js/auth-ui.js"></script>
+  <script type="module" src="./js/base-camp.js"></script>
+</body>
+</html>

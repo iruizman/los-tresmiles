@@ -72,6 +72,19 @@
       </div>
     </section>
 
+
+    <section id="campanas" class="gr11-campaigns-section shell" aria-labelledby="gr11-campaigns-title">
+      <div class="gr11-campaigns-heading">
+        <div>
+          <p class="eyebrow">Planificación</p>
+          <h2 id="gr11-campaigns-title">Mis campañas</h2>
+          <p>Organiza varios días consecutivos del GR11 y revisa etapas, fechas y alojamientos antes de salir.</p>
+        </div>
+        <button id="gr11-new-campaign" class="primary-button" type="button">+ Nueva campaña</button>
+      </div>
+      <div id="gr11-campaign-list" class="gr11-campaign-list" aria-live="polite"></div>
+    </section>
+
     <section id="etapas" class="archive-section shell">
       <div class="section-intro compact"><p class="eyebrow">Biblioteca</p><h2>Las 46 etapas</h2></div>
       <div class="gr11-toolbar">
@@ -85,9 +98,102 @@
     </section>
   </main>
 
+
+
+  <div id="gr11-campaign-modal" class="gr11-campaign-modal" hidden>
+    <div class="gr11-campaign-modal__backdrop" data-campaign-close></div>
+    <section class="gr11-campaign-dialog" role="dialog" aria-modal="true" aria-labelledby="gr11-campaign-dialog-title">
+      <header class="gr11-campaign-dialog__header">
+        <div>
+          <p class="eyebrow">Planificador GR11</p>
+          <h2 id="gr11-campaign-dialog-title">Nueva campaña</h2>
+        </div>
+        <button class="gr11-campaign-close" type="button" data-campaign-close aria-label="Cerrar asistente">×</button>
+      </header>
+
+      <div class="gr11-campaign-progress" aria-label="Progreso del asistente">
+        <span class="is-active" data-step-dot="1">1</span>
+        <span data-step-dot="2">2</span>
+        <span data-step-dot="3">3</span>
+        <span data-step-dot="4">4</span>
+        <span data-step-dot="5">5</span>
+      </div>
+
+      <form id="gr11-campaign-form" class="gr11-campaign-form">
+        <section class="gr11-campaign-step is-active" data-step="1">
+          <p class="gr11-campaign-kicker">Paso 1 de 5</p>
+          <h3>¿Cómo quieres llamar a esta campaña?</h3>
+          <label class="gr11-campaign-field">
+            <span>Nombre</span>
+            <input id="campaign-name" name="campaignName" type="text" maxlength="80" placeholder="GR11 · Julio 2027" required>
+          </label>
+          <p class="gr11-campaign-help">Te proponemos un nombre automáticamente cuando elijas la fecha.</p>
+        </section>
+
+        <section class="gr11-campaign-step" data-step="2" hidden>
+          <p class="gr11-campaign-kicker">Paso 2 de 5</p>
+          <h3>¿Cuándo empiezas?</h3>
+          <label class="gr11-campaign-field">
+            <span>Fecha de inicio</span>
+            <input id="campaign-date" name="campaignDate" type="date" required>
+          </label>
+        </section>
+
+        <section class="gr11-campaign-step" data-step="3" hidden>
+          <p class="gr11-campaign-kicker">Paso 3 de 5</p>
+          <h3>¿Desde qué etapa?</h3>
+          <label class="gr11-campaign-field">
+            <span>Buscar etapa</span>
+            <input id="campaign-stage-search" type="search" placeholder="E016, Góriz, Bera…" autocomplete="off">
+          </label>
+          <div id="campaign-stage-options" class="gr11-campaign-stage-options" role="listbox" aria-label="Etapa inicial"></div>
+        </section>
+
+        <section class="gr11-campaign-step" data-step="4" hidden>
+          <p class="gr11-campaign-kicker">Paso 4 de 5</p>
+          <h3>¿Cuántas jornadas quieres planificar?</h3>
+          <div class="gr11-campaign-days">
+            <button type="button" data-days="2">2 días</button>
+            <button type="button" data-days="3">3 días</button>
+            <button type="button" data-days="4">4 días</button>
+            <button type="button" data-days="5">5 días</button>
+            <button type="button" data-days="6">6 días</button>
+          </div>
+          <label class="gr11-campaign-field gr11-campaign-field--small">
+            <span>Personalizado</span>
+            <input id="campaign-days" name="campaignDays" type="number" min="1" max="46" value="4" required>
+          </label>
+          <p id="campaign-days-warning" class="gr11-campaign-warning" hidden></p>
+        </section>
+
+        <section class="gr11-campaign-step" data-step="5" hidden>
+          <p class="gr11-campaign-kicker">Paso 5 de 5</p>
+          <div class="gr11-campaign-preview-heading">
+            <div>
+              <h3>Revisa la campaña</h3>
+              <p>Esta vista previa todavía no escribe nada en Google Sheets.</p>
+            </div>
+            <span id="campaign-preview-loading" class="gr11-campaign-loading" hidden>Calculando GPX…</span>
+          </div>
+          <div id="campaign-preview" class="gr11-campaign-preview"></div>
+        </section>
+
+        <footer class="gr11-campaign-actions">
+          <button id="campaign-back" class="secondary-button" type="button" hidden>← Atrás</button>
+          <div>
+            <button class="gr11-campaign-cancel" type="button" data-campaign-close>Cancelar</button>
+            <button id="campaign-next" class="primary-button" type="button">Continuar →</button>
+            <button id="campaign-create" class="primary-button" type="submit" hidden>Crear campaña</button>
+          </div>
+        </footer>
+      </form>
+    </section>
+  </div>
+
   <footer class="site-footer shell"><p>Biblioteca GR11 conectada con Google Sheets.</p><a href="#top">Volver arriba ↑</a></footer>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script type="module" src="./js/gr11.js"></script>
   <script src="./js/site-nav.js"></script>
+  <script type="module" src="./js/auth-ui.js"></script>
 </body>
 </html>

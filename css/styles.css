@@ -2443,3 +2443,201 @@ h1 {
     flex: 0 0 auto;
   }
 }
+
+/* Firebase Authentication · Base Camp */
+.auth-control {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 40px;
+}
+
+.auth-login-button,
+.auth-user-button {
+  display: inline-flex;
+  align-items: center;
+  gap: .55rem;
+  min-height: 40px;
+  padding: .58rem .82rem;
+  color: inherit;
+  font: inherit;
+  font-size: .78rem;
+  font-weight: 800;
+  border: 1px solid rgba(17, 33, 29, .2);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .76);
+  cursor: pointer;
+}
+
+.auth-login-button:hover,
+.auth-user-button:hover {
+  border-color: #dd5512;
+}
+
+.auth-login-button:disabled {
+  cursor: wait;
+  opacity: .7;
+}
+
+.auth-login-button svg {
+  width: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+}
+
+.auth-menu {
+  position: relative;
+}
+
+.auth-menu > summary {
+  list-style: none;
+}
+
+.auth-menu > summary::-webkit-details-marker {
+  display: none;
+}
+
+.auth-avatar {
+  display: grid;
+  width: 25px;
+  height: 25px;
+  overflow: hidden;
+  place-items: center;
+  border-radius: 50%;
+  color: #fff;
+  background: #173f34;
+  font-size: .68rem;
+}
+
+.auth-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.auth-chevron {
+  transform: translateY(-1px);
+  font-size: .85rem;
+}
+
+.auth-popover {
+  position: absolute;
+  z-index: 1400;
+  top: calc(100% + .65rem);
+  right: 0;
+  width: min(290px, calc(100vw - 2rem));
+  padding: .8rem;
+  border: 1px solid #d7d5cd;
+  background: #fff;
+  box-shadow: 0 18px 42px rgba(10, 31, 25, .18);
+}
+
+.auth-identity {
+  padding: .5rem .55rem .8rem;
+  border-bottom: 1px solid #e2e0da;
+}
+
+.auth-identity strong,
+.auth-identity span {
+  display: block;
+}
+
+.auth-identity span {
+  margin-top: .2rem;
+  overflow-wrap: anywhere;
+  color: #69736f;
+  font-size: .78rem;
+}
+
+.auth-basecamp-link,
+.auth-signout-button {
+  display: block;
+  width: 100%;
+  padding: .72rem .58rem;
+  color: #152620;
+  text-align: left;
+  text-decoration: none;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.auth-basecamp-link {
+  margin-top: .45rem;
+  color: #0d5c47;
+  font-weight: 800;
+}
+
+.auth-basecamp-link:hover,
+.auth-signout-button:hover {
+  background: #f3f1eb;
+}
+
+.auth-signout-button {
+  font: inherit;
+  font-size: .84rem;
+}
+
+.auth-access-note {
+  margin: .65rem .55rem;
+  color: #9b4b20;
+  font-size: .78rem;
+  line-height: 1.4;
+}
+
+.auth-loading {
+  display: inline-block;
+  width: 25px;
+  height: 25px;
+  border: 2px solid rgba(15, 55, 44, .18);
+  border-top-color: #0f372c;
+  border-radius: 50%;
+  animation: auth-spin .8s linear infinite;
+}
+
+@keyframes auth-spin { to { transform: rotate(360deg); } }
+
+.auth-toast {
+  position: fixed;
+  z-index: 3000;
+  right: 1rem;
+  bottom: 1rem;
+  max-width: min(390px, calc(100vw - 2rem));
+  padding: .9rem 1rem;
+  color: #fff;
+  border-radius: 4px;
+  background: #183d33;
+  box-shadow: 0 16px 35px rgba(0, 0, 0, .2);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(12px);
+  transition: opacity .2s ease, transform .2s ease;
+}
+
+.auth-toast[data-tone="warning"] { background: #8a4a15; }
+.auth-toast[data-tone="error"] { background: #8c2e27; }
+.auth-toast.is-visible { opacity: 1; transform: translateY(0); }
+
+@media (max-width: 980px) {
+  .site-header > .header-actions {
+    margin-left: auto;
+    margin-right: 3.4rem;
+  }
+
+  .auth-user-label,
+  .auth-chevron {
+    display: none;
+  }
+
+  .auth-login-button span {
+    display: none;
+  }
+
+  .auth-login-button,
+  .auth-user-button {
+    justify-content: center;
+    width: 40px;
+    padding: 0;
+  }
+}

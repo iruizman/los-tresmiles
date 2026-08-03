@@ -1,0 +1,241 @@
+.basecamp-page {
+  background: #f4f0e8;
+}
+
+.basecamp-hero {
+  color: #fff;
+  background:
+    linear-gradient(110deg, rgba(9, 36, 29, .96), rgba(15, 57, 46, .86)),
+    radial-gradient(circle at 82% 30%, rgba(230, 98, 20, .42), transparent 34%);
+  padding: clamp(4.5rem, 9vw, 7rem) 0 4rem;
+}
+
+.basecamp-hero-inner,
+.basecamp-welcome {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 2rem;
+}
+
+.basecamp-hero h1 {
+  margin: .35rem 0 .7rem;
+  font-size: clamp(3rem, 8vw, 6.2rem);
+  line-height: .88;
+}
+
+.basecamp-hero p:not(.eyebrow) {
+  max-width: 680px;
+  margin: 0;
+  color: rgba(255, 255, 255, .76);
+  font-size: clamp(1rem, 2vw, 1.18rem);
+}
+
+.basecamp-mark {
+  display: grid;
+  width: clamp(88px, 12vw, 150px);
+  aspect-ratio: 1;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, .22);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .08);
+  font-size: clamp(2.5rem, 6vw, 5rem);
+}
+
+.basecamp-shell {
+  min-height: 58vh;
+  padding-top: clamp(3rem, 7vw, 5.5rem);
+  padding-bottom: clamp(4rem, 8vw, 7rem);
+}
+
+.basecamp-state {
+  max-width: 660px;
+  margin: 0 auto;
+  padding: clamp(2.2rem, 6vw, 4rem);
+  text-align: center;
+  border: 1px solid #d7d5ce;
+  background: rgba(255, 255, 255, .68);
+}
+
+.basecamp-state[hidden],
+#basecamp-content[hidden] {
+  display: none !important;
+}
+
+.basecamp-state h2 {
+  margin: .35rem 0 .8rem;
+  font-size: clamp(2rem, 5vw, 3.4rem);
+}
+
+.basecamp-state > p:not(.eyebrow) {
+  max-width: 510px;
+  margin: 0 auto 1.5rem;
+  color: #5d6865;
+}
+
+.basecamp-state-icon {
+  display: block;
+  margin-bottom: 1.2rem;
+  font-size: 2.5rem;
+}
+
+.basecamp-login {
+  border: 0;
+  cursor: pointer;
+}
+
+.basecamp-error {
+  min-height: 1.25rem;
+  margin-top: 1rem !important;
+  color: #a33125 !important;
+  font-size: .9rem;
+}
+
+.basecamp-spinner {
+  display: inline-block;
+  width: 32px;
+  height: 32px;
+  margin-bottom: 1rem;
+  border: 3px solid rgba(11, 55, 44, .18);
+  border-top-color: #0b372c;
+  border-radius: 50%;
+  animation: basecamp-spin .8s linear infinite;
+}
+
+@keyframes basecamp-spin { to { transform: rotate(360deg); } }
+
+.basecamp-welcome {
+  padding-bottom: 2.3rem;
+  border-bottom: 1px solid #cfcdc6;
+}
+
+.basecamp-welcome h2 {
+  margin: .3rem 0 .5rem;
+  font-size: clamp(2.3rem, 6vw, 4.5rem);
+}
+
+.basecamp-welcome p {
+  margin: 0;
+  color: #66716d;
+}
+
+.basecamp-account-card {
+  min-width: 240px;
+  padding: 1.2rem 1.35rem;
+  border-left: 3px solid #dd5512;
+  background: #fff;
+}
+
+.basecamp-account-card span,
+.basecamp-account-card strong {
+  display: block;
+}
+
+.basecamp-account-card span {
+  margin-bottom: .35rem;
+  color: #dd5512;
+  font-size: .72rem;
+  font-weight: 800;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.basecamp-account-card strong {
+  overflow-wrap: anywhere;
+  font-size: .95rem;
+}
+
+.basecamp-modules {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.basecamp-module {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 1.1rem;
+  min-height: 155px;
+  padding: 1.5rem;
+  color: #12221e;
+  text-decoration: none;
+  border: 1px solid #d2d0c8;
+  background: rgba(255, 255, 255, .74);
+  transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease;
+}
+
+.basecamp-module--active:hover {
+  transform: translateY(-3px);
+  border-color: #dd5512;
+  box-shadow: 0 16px 32px rgba(20, 39, 33, .1);
+}
+
+.basecamp-module.is-coming {
+  opacity: .62;
+}
+
+.basecamp-module-icon {
+  font-size: 2rem;
+}
+
+.basecamp-module-copy,
+.basecamp-module-copy small,
+.basecamp-module-copy strong,
+.basecamp-module-copy span {
+  display: block;
+}
+
+.basecamp-module-copy small {
+  margin-bottom: .35rem;
+  color: #dd5512;
+  font-size: .68rem;
+  font-weight: 800;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.basecamp-module-copy strong {
+  margin-bottom: .35rem;
+  font-size: 1.2rem;
+}
+
+.basecamp-module-copy span {
+  color: #68736f;
+  font-size: .9rem;
+  line-height: 1.45;
+}
+
+.basecamp-security-note {
+  margin-top: 2rem;
+  padding: 1.2rem 1.35rem;
+  border-left: 3px solid #1b6e57;
+  background: rgba(27, 110, 87, .08);
+}
+
+.basecamp-security-note p {
+  margin: .3rem 0 0;
+  color: #52605c;
+  font-size: .9rem;
+}
+
+@media (max-width: 760px) {
+  .basecamp-hero-inner,
+  .basecamp-welcome {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .basecamp-mark {
+    display: none;
+  }
+
+  .basecamp-account-card {
+    width: 100%;
+  }
+
+  .basecamp-modules {
+    grid-template-columns: 1fr;
+  }
+}

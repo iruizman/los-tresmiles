@@ -1,6 +1,7 @@
 import { loadGr11RawData } from "./data.js";
 import { buildGr11Database } from "./db.js";
 import { escapeHtml, etapaUrl, gpxUrl, statusLabel, numberText } from "./gr11-shared.js";
+import { GPXEngine } from "./gpx-engine.js";
 
 let DB;
 let map;
@@ -10,6 +11,11 @@ let endpointLayer;
 let fullRouteBounds;
 const layerByStageId = new Map();
 let selectedStageId = "";
+const draftCampaigns = [];
+let campaignStep = 1;
+let campaignStageId = "";
+let campaignLastFocus = null;
+let campaignPreviewToken = 0;
 
 const els = {
   status: document.querySelector("#gr11-status"),
@@ -21,7 +27,22 @@ const els = {
   state: document.querySelector("#gr11-state"),
   difficulty: document.querySelector("#gr11-difficulty"),
   reset: document.querySelector("#gr11-reset"),
-  mapMessage: document.querySelector("#gr11-map-message")
+  mapMessage: document.querySelector("#gr11-map-message"),
+  campaignList: document.querySelector("#gr11-campaign-list"),
+  newCampaign: document.querySelector("#gr11-new-campaign"),
+  campaignModal: document.querySelector("#gr11-campaign-modal"),
+  campaignForm: document.querySelector("#gr11-campaign-form"),
+  campaignName: document.querySelector("#campaign-name"),
+  campaignDate: document.querySelector("#campaign-date"),
+  campaignStageSearch: document.querySelector("#campaign-stage-search"),
+  campaignStageOptions: document.querySelector("#campaign-stage-options"),
+  campaignDays: document.querySelector("#campaign-days"),
+  campaignDaysWarning: document.querySelector("#campaign-days-warning"),
+  campaignPreview: document.querySelector("#campaign-preview"),
+  campaignPreviewLoading: document.querySelector("#campaign-preview-loading"),
+  campaignBack: document.querySelector("#campaign-back"),
+  campaignNext: document.querySelector("#campaign-next"),
+  campaignCreate: document.querySelector("#campaign-create")
 };
 
 function initMap() {
@@ -252,6 +273,300 @@ function resetMapView() {
   map.closePopup();
 }
 
+
+function localDateFromInput(value) {
+  const match = String(value || "").match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!match) return null;
+  return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+}
+
+function addDays(date, amount) {
+  const result = new Date(date);
+  result.setDate(result.getDate() + amount);
+  return result;
+}
+
+function dateInputValue(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function formatCampaignDate(date, options = {}) {
+  return new Intl.DateTimeFormat("es-ES", {
+    day: "numeric",
+    month: "long",
+    year: options.year === false ? undefined : "numeric"
+  }).format(date);
+}
+
+function suggestedCampaignName(date) {
+  if (!date) return "GR11 · Nueva campaña";
+  const month = new Intl.DateTimeFormat("es-ES", { month: "long" }).format(date);
+  return `GR11 · ${month.charAt(0).toUpperCase()}${month.slice(1)} ${date.getFullYear()}`;
+}
+
+function parseDurationMinutes(text) {
+  const value = String(text || "").toLowerCase();
+  const hours = Number(value.match(/(\d+(?:[.,]\d+)?)\s*h/)?.[1]?.replace(",", ".") || 0);
+  const minutes = Number(value.match(/(\d+)\s*min/)?.[1] || 0);
+  return Math.round(hours * 60 + minutes);
+}
+
+function durationText(totalMinutes) {
+  if (!Number.isFinite(totalMinutes) || totalMinutes <= 0) return "—";
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  return minutes ? `${hours} h ${minutes} min` : `${hours} h`;
+}
+
+function campaignSelection() {
+  const startIndex = DB.etapas.findIndex((stage) => stage.id === campaignStageId);
+  const requested = Math.max(1, Number(els.campaignDays.value) || 1);
+  if (startIndex < 0) return [];
+  return DB.etapas.slice(startIndex, startIndex + requested);
+}
+
+function renderCampaigns() {
+  if (!draftCampaigns.length) {
+    els.campaignList.innerHTML = `<div class="gr11-campaign-empty">
+      <div><strong>Todavía no tienes campañas creadas.</strong><p>Cuando prepares una, aparecerá aquí con sus jornadas y alojamientos.</p></div>
+      <button class="secondary-button" type="button" data-open-campaign>Crear la primera →</button>
+    </div>`;
+  } else {
+    els.campaignList.innerHTML = draftCampaigns.map((campaign) => `
+      <article class="gr11-campaign-card">
+        <div class="gr11-campaign-card__top">
+          <span class="gr11-status planificada">Planificada</span>
+          <small>Provisional · esta sesión</small>
+        </div>
+        <h3>${escapeHtml(campaign.name)}</h3>
+        <p>${formatCampaignDate(campaign.startDate)} · ${campaign.stages.length} ${campaign.stages.length === 1 ? "jornada" : "jornadas"}</p>
+        <div class="gr11-campaign-card__route"><strong>${escapeHtml(campaign.stages[0].inicio)}</strong><span>→</span><strong>${escapeHtml(campaign.stages.at(-1).final)}</strong></div>
+        <div class="gr11-campaign-card__facts">
+          <span><strong>${campaign.totals.distance.toFixed(1)} km</strong> distancia</span>
+          <span><strong>${Math.round(campaign.totals.gain)} m+</strong> ascenso</span>
+          <span><strong>${durationText(campaign.totals.minutes)}</strong> tiempo</span>
+        </div>
+      </article>`).join("");
+  }
+  els.campaignList.querySelectorAll("[data-open-campaign]").forEach((button) => button.addEventListener("click", openCampaignWizard));
+}
+
+function resetCampaignWizard() {
+  campaignStep = 1;
+  campaignStageId = DB?.etapas?.[0]?.id || "";
+  const defaultDate = addDays(new Date(), 1);
+  els.campaignDate.value = dateInputValue(defaultDate);
+  els.campaignName.value = suggestedCampaignName(defaultDate);
+  els.campaignStageSearch.value = "";
+  els.campaignDays.value = "4";
+  els.campaignDaysWarning.hidden = true;
+  renderCampaignStageOptions();
+  showCampaignStep(1);
+}
+
+function openCampaignWizard() {
+  campaignLastFocus = document.activeElement;
+  resetCampaignWizard();
+  els.campaignModal.hidden = false;
+  document.body.classList.add("gr11-campaign-open");
+  requestAnimationFrame(() => els.campaignName.focus());
+}
+
+function closeCampaignWizard() {
+  els.campaignModal.hidden = true;
+  document.body.classList.remove("gr11-campaign-open");
+  campaignLastFocus?.focus?.();
+}
+
+function showCampaignStep(step) {
+  campaignStep = step;
+  els.campaignModal.querySelectorAll("[data-step]").forEach((section) => {
+    const active = Number(section.dataset.step) === step;
+    section.hidden = !active;
+    section.classList.toggle("is-active", active);
+  });
+  els.campaignModal.querySelectorAll("[data-step-dot]").forEach((dot) => {
+    const number = Number(dot.dataset.stepDot);
+    dot.classList.toggle("is-active", number === step);
+    dot.classList.toggle("is-complete", number < step);
+  });
+  els.campaignBack.hidden = step === 1;
+  els.campaignNext.hidden = step === 5;
+  els.campaignCreate.hidden = step !== 5;
+
+  if (step === 3) renderCampaignStageOptions();
+  if (step === 4) validateCampaignDays();
+  if (step === 5) renderCampaignPreview();
+}
+
+function renderCampaignStageOptions() {
+  const query = els.campaignStageSearch.value.trim().toLowerCase();
+  const stages = DB.etapas.filter((stage) => `${stage.id} ${stage.nombre} ${stage.inicio} ${stage.final}`.toLowerCase().includes(query));
+  els.campaignStageOptions.innerHTML = stages.map((stage) => `
+    <button type="button" class="gr11-campaign-stage-option ${stage.id === campaignStageId ? "is-selected" : ""}" data-campaign-stage="${stage.id}" role="option" aria-selected="${stage.id === campaignStageId}">
+      <span><strong>${escapeHtml(stage.id)}</strong>${escapeHtml(stage.nombre)}</span>
+      <small>${escapeHtml(stage.inicio)} → ${escapeHtml(stage.final)}</small>
+    </button>`).join("") || `<p class="gr11-campaign-no-results">No se ha encontrado ninguna etapa.</p>`;
+  els.campaignStageOptions.querySelectorAll("[data-campaign-stage]").forEach((button) => {
+    button.addEventListener("click", () => {
+      campaignStageId = button.dataset.campaignStage;
+      renderCampaignStageOptions();
+    });
+  });
+}
+
+function validateCampaignDays() {
+  const startIndex = DB.etapas.findIndex((stage) => stage.id === campaignStageId);
+  const maxDays = startIndex >= 0 ? DB.etapas.length - startIndex : 0;
+  const requested = Math.max(1, Number(els.campaignDays.value) || 1);
+  els.campaignDays.max = String(Math.max(1, maxDays));
+  if (requested > maxDays) {
+    els.campaignDaysWarning.textContent = `Desde ${campaignStageId} solo quedan ${maxDays} etapas. Ajustaremos la campaña a ${maxDays} jornadas.`;
+    els.campaignDaysWarning.hidden = false;
+    els.campaignDays.value = String(maxDays);
+  } else {
+    els.campaignDaysWarning.hidden = true;
+  }
+}
+
+function validateCampaignStep() {
+  if (campaignStep === 1 && !els.campaignName.value.trim()) {
+    els.campaignName.focus();
+    return false;
+  }
+  if (campaignStep === 2 && !localDateFromInput(els.campaignDate.value)) {
+    els.campaignDate.focus();
+    return false;
+  }
+  if (campaignStep === 3 && !campaignStageId) return false;
+  if (campaignStep === 4) {
+    validateCampaignDays();
+    return Number(els.campaignDays.value) > 0;
+  }
+  return true;
+}
+
+async function stageMetrics(stage) {
+  try {
+    const track = await GPXEngine.load(gpxUrl(stage.trackReferencia));
+    return {
+      distance: track.distanceKm,
+      gain: Number.isFinite(track.elevationGain) ? track.elevationGain : 0,
+      loss: Number.isFinite(track.elevationLoss) ? track.elevationLoss : 0
+    };
+  } catch (error) {
+    console.warn(`No se pudieron calcular las métricas de ${stage.id}`, error);
+    return {
+      distance: Number(stage.distanciaKm) || 0,
+      gain: Number(stage.desnivelPos) || 0,
+      loss: Number(stage.desnivelNeg) || 0
+    };
+  }
+}
+
+async function renderCampaignPreview() {
+  const token = ++campaignPreviewToken;
+  const stages = campaignSelection();
+  const startDate = localDateFromInput(els.campaignDate.value);
+  els.campaignPreviewLoading.hidden = false;
+  els.campaignPreview.innerHTML = `<p class="gr11-campaign-preview-placeholder">Preparando jornadas y leyendo los GPX…</p>`;
+  const metrics = await Promise.all(stages.map(stageMetrics));
+  if (token !== campaignPreviewToken) return;
+
+  const totals = stages.reduce((acc, stage, index) => {
+    acc.distance += metrics[index].distance;
+    acc.gain += metrics[index].gain;
+    acc.loss += metrics[index].loss;
+    acc.minutes += parseDurationMinutes(stage.tiempoEstimado);
+    return acc;
+  }, { distance: 0, gain: 0, loss: 0, minutes: 0 });
+
+  els.campaignPreviewLoading.hidden = true;
+  els.campaignPreview.innerHTML = `
+    <div class="gr11-campaign-preview-summary">
+      <div><span>Campaña</span><strong>${escapeHtml(els.campaignName.value.trim())}</strong></div>
+      <div><span>Recorrido</span><strong>${escapeHtml(stages[0]?.inicio || "—")} → ${escapeHtml(stages.at(-1)?.final || "—")}</strong></div>
+    </div>
+    <div class="gr11-campaign-itinerary">
+      ${stages.map((stage, index) => {
+        const refuge = stage.refugio;
+        const date = addDays(startDate, index);
+        return `<article class="gr11-campaign-day">
+          <div class="gr11-campaign-day__date"><span>Día ${index + 1}</span><strong>${formatCampaignDate(date, { year: false })}</strong></div>
+          <div class="gr11-campaign-day__main">
+            <span class="gr11-campaign-day__id">${escapeHtml(stage.id)}</span>
+            <h4>${escapeHtml(stage.nombre)}</h4>
+            <p>${escapeHtml(stage.inicio)} → ${escapeHtml(stage.final)}</p>
+            <div class="gr11-campaign-day__facts">
+              <span>${metrics[index].distance.toFixed(1)} km</span>
+              <span>${Math.round(metrics[index].gain)} m+</span>
+              <span>${escapeHtml(stage.tiempoEstimado || "—")}</span>
+            </div>
+          </div>
+          <div class="gr11-campaign-day__stay">
+            <span>Alojamiento previsto</span>
+            <strong>${escapeHtml(refuge?.nombre || "Sin alojamiento definido")}</strong>
+            <small>${escapeHtml(refuge?.tipo || "")} ${refuge?.abierto ? `· ${escapeHtml(refuge.abierto)}` : ""}</small>
+            ${refuge?.reservasUrl ? `<a href="${escapeHtml(refuge.reservasUrl)}" target="_blank" rel="noopener">Reservar ↗</a>` : refuge?.telefono ? `<span>${escapeHtml(refuge.telefono)}</span>` : ""}
+          </div>
+        </article>`;
+      }).join("")}
+    </div>
+    <div class="gr11-campaign-totals">
+      <div><strong>${totals.distance.toFixed(1)} km</strong><span>Distancia</span></div>
+      <div><strong>${Math.round(totals.gain)} m+</strong><span>Ascenso</span></div>
+      <div><strong>${Math.round(totals.loss)} m−</strong><span>Descenso</span></div>
+      <div><strong>${durationText(totals.minutes)}</strong><span>Tiempo previsto</span></div>
+      <div><strong>${stages.length}</strong><span>Alojamientos</span></div>
+    </div>`;
+  els.campaignPreview.dataset.totals = JSON.stringify(totals);
+}
+
+function bindCampaignPlanner() {
+  els.newCampaign.addEventListener("click", openCampaignWizard);
+  els.campaignModal.querySelectorAll("[data-campaign-close]").forEach((button) => button.addEventListener("click", closeCampaignWizard));
+  els.campaignStageSearch.addEventListener("input", renderCampaignStageOptions);
+  els.campaignDate.addEventListener("change", () => {
+    const date = localDateFromInput(els.campaignDate.value);
+    if (date && (!els.campaignName.value.trim() || /^GR11 · /.test(els.campaignName.value))) {
+      els.campaignName.value = suggestedCampaignName(date);
+    }
+  });
+  els.campaignModal.querySelectorAll("[data-days]").forEach((button) => {
+    button.addEventListener("click", () => {
+      els.campaignDays.value = button.dataset.days;
+      validateCampaignDays();
+      els.campaignModal.querySelectorAll("[data-days]").forEach((item) => item.classList.toggle("is-selected", item === button));
+    });
+  });
+  els.campaignDays.addEventListener("input", validateCampaignDays);
+  els.campaignNext.addEventListener("click", () => {
+    if (validateCampaignStep()) showCampaignStep(Math.min(5, campaignStep + 1));
+  });
+  els.campaignBack.addEventListener("click", () => showCampaignStep(Math.max(1, campaignStep - 1)));
+  els.campaignForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const stages = campaignSelection();
+    const totals = JSON.parse(els.campaignPreview.dataset.totals || '{"distance":0,"gain":0,"loss":0,"minutes":0}');
+    draftCampaigns.push({
+      id: `TMP${String(draftCampaigns.length + 1).padStart(3, "0")}`,
+      name: els.campaignName.value.trim(),
+      startDate: localDateFromInput(els.campaignDate.value),
+      stages,
+      totals
+    });
+    renderCampaigns();
+    closeCampaignWizard();
+    document.querySelector("#campanas")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && !els.campaignModal.hidden) closeCampaignWizard();
+  });
+}
+
 function bind() {
   [els.search, els.state, els.difficulty].forEach((control) => control.addEventListener("input", renderStages));
   els.mapMessage.addEventListener("click", resetMapView);
@@ -280,7 +595,9 @@ async function start() {
     renderRefuges();
     const tracksLoaded = await renderTracks();
     renderStages();
+    renderCampaigns();
     bind();
+    bindCampaignPlanner();
 
     if (!tracksLoaded) {
       els.mapMessage.querySelector("span").textContent = "No se ha podido cargar ningún GPX.";
