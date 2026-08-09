@@ -232,9 +232,16 @@ async function pushChangesToCloud(
 ) {
   const user = auth.currentUser;
 
-  if (!user) {
+  if (!user || !isAuthorized(user)) {
     return;
   }
+
+  const previousById = new Map(
+    previousCampaigns.map((campaign) => [
+      campaign.id,
+      campaign
+    ])
+  );
 
   const previousIds = new Set(
     previousCampaigns.map((campaign) => campaign.id)
@@ -244,8 +251,23 @@ async function pushChangesToCloud(
     nextCampaigns.map((campaign) => campaign.id)
   );
 
-  // Crear o actualizar campañas.
+  // Crear o actualizar SOLO las campañas que realmente han cambiado.
+  // Así, una pestaña/dispositivo con una copia local antigua no puede
+  // "resucitar" campañas que ya se borraron desde otro dispositivo.
   for (const campaign of nextCampaigns) {
+    const previous = previousById.get(campaign.id);
+
+    const isNew = !previous;
+
+    const isUpdated =
+      previous &&
+      campaignTimestamp(campaign) >
+        campaignTimestamp(previous);
+
+    if (!isNew && !isUpdated) {
+      continue;
+    }
+
     try {
       await saveCloudCampaign(
         user.uid,
@@ -260,7 +282,7 @@ async function pushChangesToCloud(
   }
 
   // Eliminar de Firestore las campañas que
-  // hayan sido borradas localmente.
+  // hayan sido borradas localmente de forma explícita.
   for (const id of previousIds) {
     if (!nextIds.has(id)) {
       try {
@@ -286,97 +308,34 @@ export async function syncCampaignsWithCloud() {
 
   const user = auth.currentUser;
 
-  if (!user) {
+  if (!user || !isAuthorized(user)) {
     return loadCampaigns();
   }
 
   cloudSyncRunning = true;
 
   try {
-    const localCampaigns = loadCampaigns();
-
     const cloudCampaigns = (
       await loadCloudCampaigns(user.uid)
     )
       .map(cleanCampaign)
       .filter(Boolean);
 
-    // Primera migración:
-    // Firestore está vacío y existen campañas locales.
-    if (
-      cloudCampaigns.length === 0 &&
-      localCampaigns.length > 0
-    ) {
-      for (const campaign of localCampaigns) {
-        await saveCloudCampaign(
-          user.uid,
-          campaign
-        );
-      }
-
-      console.info(
-        `Base Camp: ${localCampaigns.length} campaña(s) migrada(s) a Firestore.`
-      );
-
-      return localCampaigns;
-    }
-
-    // Unimos nube + local sin perder cambios.
-    const merged = new Map();
-
-    cloudCampaigns.forEach((campaign) => {
-      merged.set(
-        campaign.id,
-        campaign
-      );
-    });
-
-    for (const localCampaign of localCampaigns) {
-      const cloudCampaign = merged.get(
-        localCampaign.id
-      );
-
-      // Campaña que solo existe localmente.
-      if (!cloudCampaign) {
-        merged.set(
-          localCampaign.id,
-          localCampaign
-        );
-
-        await saveCloudCampaign(
-          user.uid,
-          localCampaign
-        );
-
-        continue;
-      }
-
-      // Si la versión local es más reciente,
-      // la enviamos a Firestore.
-      if (
-        campaignTimestamp(localCampaign) >
-        campaignTimestamp(cloudCampaign)
-      ) {
-        merged.set(
-          localCampaign.id,
-          localCampaign
-        );
-
-        await saveCloudCampaign(
-          user.uid,
-          localCampaign
-        );
-      }
-    }
-
-    const result = Array.from(
-      merged.values()
+    // Firestore es la fuente de verdad.
+    //
+    // Antes se fusionaban las campañas de localStorage con las de
+    // Firestore y cualquier campaña que existiera solo en local se
+    // volvía a subir. Eso provocaba que una campaña borrada desde otro
+    // dispositivo pudiera reaparecer.
+    //
+    // A partir de ahora, al sincronizar, la copia local se sustituye
+    // exactamente por lo que existe en Firestore.
+    const result = saveLocalCampaigns(
+      cloudCampaigns
     );
 
-    saveLocalCampaigns(result);
-
     console.info(
-      `Base Camp sincronizado: ${result.length} campaña(s).`
+      `Base Camp sincronizado desde Firestore: ${result.length} campaña(s).`
     );
 
     return result;
@@ -386,8 +345,8 @@ export async function syncCampaignsWithCloud() {
       error
     );
 
-    // Si Firestore falla, Base Camp sigue funcionando
-    // con la copia local.
+    // Si Firestore falla temporalmente mantenemos la copia local,
+    // pero nunca la usamos para reconstruir automáticamente la nube.
     return loadCampaigns();
   } finally {
     cloudSyncRunning = false;
@@ -414,7 +373,8 @@ export function saveCampaigns(campaigns) {
     campaigns
   );
 
-  // Firestore se actualiza en segundo plano.
+  // Firestore se actualiza en segundo plano,
+  // pero solo para las campañas creadas o modificadas.
   pushChangesToCloud(
     previous,
     clean
