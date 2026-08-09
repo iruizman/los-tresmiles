@@ -2,7 +2,8 @@ import { loadGr11RawData } from "./data.js";
 import { buildGr11Database } from "./db.js";
 import { escapeHtml, etapaUrl, gpxUrl, statusLabel, numberText } from "./gr11-shared.js";
 import { GPXEngine } from "./gpx-engine.js";
-import { addCampaign, loadCampaigns, observeCampaigns, campaignStageStatusMap, campaignStatusLabel, campaignStatusClass } from "./campaign-store.js";
+import { addCampaign, loadCampaigns, observeCampaigns, campaignStageStatusMap, campaignStatusLabel, campaignStatusClass, syncCampaignsWithCloud } from "./campaign-store.js";
+import { observeAuth, isAuthorized, signInWithGoogle } from "./auth.js";
 
 let DB;
 let map;
@@ -17,6 +18,8 @@ let campaignStep = 1;
 let campaignStageId = "";
 let campaignLastFocus = null;
 let campaignPreviewToken = 0;
+let campaignUser = null;
+let campaignAuthorized = false;
 
 const els = {
   status: document.querySelector("#gr11-status"),
@@ -65,10 +68,20 @@ function trackColor(status) {
   return { realizada: "#1f6b48", planificada: "#d79a22", pendiente: "#c4473d" }[status] ?? "#c4473d";
 }
 
+function visibleCampaigns() {
+  if (campaignAuthorized) {
+    return draftCampaigns;
+  }
+
+  return draftCampaigns.filter(
+    (campaign) => campaign.status === "completada"
+  );
+}
+
 function syncCampaignStatuses() {
   if (!DB) return;
 
-  const campaignStates = campaignStageStatusMap(draftCampaigns);
+  const campaignStates = campaignStageStatusMap(visibleCampaigns());
 
   DB.etapas.forEach((stage) => {
     if (!stage.baseEstado) stage.baseEstado = stage.estado;
@@ -364,17 +377,24 @@ function campaignSelection() {
 }
 
 function renderCampaigns() {
-  if (!draftCampaigns.length) {
-    els.campaignList.innerHTML = `<div class="gr11-campaign-empty">
+  const campaigns = visibleCampaigns();
+
+  if (!campaigns.length) {
+    els.campaignList.innerHTML = campaignAuthorized
+      ? `<div class="gr11-campaign-empty">
       <div><strong>Todavía no tienes campañas creadas.</strong><p>Cuando prepares una, aparecerá aquí con sus jornadas y alojamientos.</p></div>
       <button class="secondary-button" type="button" data-open-campaign>Crear la primera →</button>
+    </div>`
+      : `<div class="gr11-campaign-empty">
+      <div><strong>Todavía no hay campañas completadas.</strong><p>Las próximas expediciones permanecen privadas hasta que estén completadas.</p></div>
     </div>`;
   } else {
-    els.campaignList.innerHTML = draftCampaigns.map((campaign) => `
+    els.campaignList.innerHTML = campaigns.map((campaign) => `
+
       <article class="gr11-campaign-card">
         <div class="gr11-campaign-card__top">
           <span class="gr11-status campaign-${campaignStatusClass(campaign.status)}">${escapeHtml(campaignStatusLabel(campaign.status))}</span>
-          <small>Borrador local · Base Camp</small>
+          <small>Base Camp · Firestore</small>
         </div>
         <h3>${escapeHtml(campaign.name)}</h3>
         <p>${formatCampaignDate(localDateFromInput(campaign.startDate))} · ${campaign.stages.length} ${campaign.stages.length === 1 ? "jornada" : "jornadas"}</p>
@@ -403,7 +423,16 @@ function resetCampaignWizard() {
   showCampaignStep(1);
 }
 
-function openCampaignWizard() {
+async function openCampaignWizard() {
+  if (!campaignAuthorized) {
+    try {
+      await signInWithGoogle();
+    } catch (error) {
+      console.error("No se pudo iniciar sesión:", error);
+    }
+    return;
+  }
+
   campaignLastFocus = document.activeElement;
   resetCampaignWizard();
   els.campaignModal.hidden = false;
@@ -590,20 +619,43 @@ function bindCampaignPlanner() {
   els.campaignBack.addEventListener("click", () => showCampaignStep(Math.max(1, campaignStep - 1)));
   els.campaignForm.addEventListener("submit", (event) => {
     event.preventDefault();
+
+    if (!campaignAuthorized) {
+      closeCampaignWizard();
+      signInWithGoogle().catch((error) => {
+        console.error("No se pudo iniciar sesión:", error);
+      });
+      return;
+    }
+
     const stages = campaignSelection();
-    const totals = JSON.parse(els.campaignPreview.dataset.totals || '{"distance":0,"gain":0,"loss":0,"minutes":0}');
-    addCampaign({
-      name: els.campaignName.value.trim(),
-      startDate: els.campaignDate.value,
-      status: "planificada",
-      stages,
-      totals
-    });
-    draftCampaigns = loadCampaigns();
-    renderCampaigns();
-    refreshCampaignStatusView();
-    closeCampaignWizard();
-    document.querySelector("#campanas")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    const totals = JSON.parse(
+      els.campaignPreview.dataset.totals ||
+      '{"distance":0,"gain":0,"loss":0,"minutes":0}'
+    );
+
+    try {
+      addCampaign({
+        name: els.campaignName.value.trim(),
+        startDate: els.campaignDate.value,
+        status: "planificada",
+        stages,
+        totals
+      });
+
+      draftCampaigns = loadCampaigns();
+      renderCampaigns();
+      refreshCampaignStatusView();
+      closeCampaignWizard();
+
+      document.querySelector("#campanas")?.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
+    } catch (error) {
+      console.error(error);
+      alert(error.message || "No se pudo crear la campaña.");
+    }
   });
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape" && !els.campaignModal.hidden) closeCampaignWizard();
@@ -666,5 +718,40 @@ async function start() {
     els.grid.innerHTML = `<p class="archive-empty">${escapeHtml(error.message)}</p>`;
   }
 }
+
+observeAuth(async (user) => {
+  campaignUser = user;
+  campaignAuthorized = isAuthorized(user);
+
+  if (els.newCampaign) {
+    els.newCampaign.textContent = campaignAuthorized
+      ? "+ Nueva campaña"
+      : "Iniciar sesión para crear campaña";
+  }
+
+  if (!campaignAuthorized) {
+    // Conservamos la copia cargada, pero la vista pública
+    // solo muestra campañas completadas.
+    if (DB) {
+      renderCampaigns();
+      refreshCampaignStatusView();
+    }
+    return;
+  }
+
+  try {
+    draftCampaigns = await syncCampaignsWithCloud();
+
+    if (DB) {
+      renderCampaigns();
+      refreshCampaignStatusView();
+    }
+  } catch (error) {
+    console.error(
+      "No se pudieron cargar las campañas de Firestore:",
+      error
+    );
+  }
+});
 
 start();

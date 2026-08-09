@@ -1,4 +1,5 @@
-import { auth, authReady } from "./firebase-config.js";
+import { auth } from "./firebase-config.js";
+import { observeAuth, isAuthorized } from "./auth.js";
 
 import {
   loadCloudCampaigns,
@@ -9,8 +10,8 @@ import {
 const STORAGE_KEY = "los-tresmiles:gr11-campaigns:v1";
 const CHANGE_EVENT = "los-tresmiles:campaigns-changed";
 
-let cloudSyncStarted = false;
 let cloudSyncRunning = false;
+let lastSyncedUid = "";
 
 
 // ======================================================
@@ -399,6 +400,14 @@ export async function syncCampaignsWithCloud() {
 // ======================================================
 
 export function saveCampaigns(campaigns) {
+  const user = auth.currentUser;
+
+  if (!user || !isAuthorized(user)) {
+    throw new Error(
+      "Debes iniciar sesión con una cuenta autorizada para modificar campañas."
+    );
+  }
+
   const previous = loadCampaigns();
 
   const clean = saveLocalCampaigns(
@@ -406,7 +415,6 @@ export function saveCampaigns(campaigns) {
   );
 
   // Firestore se actualiza en segundo plano.
-  // No bloqueamos la interfaz.
   pushChangesToCloud(
     previous,
     clean
@@ -531,8 +539,15 @@ export async function removeCampaign(id) {
 
   const user = auth.currentUser;
 
-  if (user) {
-    try {
+  if (!user || !isAuthorized(user)) {
+    saveLocalCampaigns(previousCampaigns);
+
+    throw new Error(
+      "Debes iniciar sesión con una cuenta autorizada para eliminar campañas."
+    );
+  }
+
+  try {
       // Esperamos expresamente a que Firestore confirme el borrado.
       await removeCloudCampaign(
         user.uid,
@@ -552,7 +567,6 @@ export async function removeCampaign(id) {
         "No se pudo eliminar la campaña de Base Camp. Inténtalo de nuevo."
       );
     }
-  }
 
   return nextCampaigns;
 }
@@ -598,25 +612,27 @@ export function observeCampaigns(callback) {
 // SINCRONIZACIÓN AUTOMÁTICA
 // ======================================================
 
-async function startCloudSync() {
-  if (cloudSyncStarted) {
+// La sesión de Firebase se resuelve de forma asíncrona.
+// Sincronizamos cuando Authentication confirma un usuario autorizado,
+// también después de iniciar sesión en un dispositivo nuevo.
+observeAuth(async (user) => {
+  if (!user || !isAuthorized(user)) {
+    lastSyncedUid = "";
     return;
   }
 
-  cloudSyncStarted = true;
+  // Evita repetir la sincronización inicial para la misma sesión.
+  if (lastSyncedUid === user.uid) {
+    return;
+  }
 
   try {
-    await authReady;
-
-    if (auth.currentUser) {
-      await syncCampaignsWithCloud();
-    }
+    await syncCampaignsWithCloud();
+    lastSyncedUid = user.uid;
   } catch (error) {
     console.error(
       "No se pudo iniciar la sincronización de Base Camp:",
       error
     );
   }
-}
-
-startCloudSync();
+});
