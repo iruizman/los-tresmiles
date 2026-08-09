@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Área privada de planificación de Los Tresmiles de Iñaki.">
+  <meta name="description" content="Centro privado de planificación de Los Tresmiles de Iñaki.">
   <meta name="robots" content="noindex,nofollow">
   <title>Base Camp · Los Tresmiles de Iñaki</title>
   <link rel="stylesheet" href="./css/styles.css">
@@ -38,11 +38,13 @@
           <nav class="breadcrumbs" aria-label="Migas de pan">
             <a href="index.html">Inicio</a><span>/</span><span>Base Camp</span>
           </nav>
-          <p class="eyebrow">Área privada</p>
+          <p class="eyebrow">Centro de operaciones</p>
           <h1>Base Camp</h1>
-          <p>Tu centro de planificación, seguimiento y memoria de montaña.</p>
+          <p>Prepara la salida, sigue el recorrido y conserva la historia.</p>
         </div>
-        <div class="basecamp-mark" aria-hidden="true">🏕</div>
+        <div class="basecamp-mark" aria-hidden="true">
+          <svg viewBox="0 0 96 96"><path d="M18 74 47 25l31 49H18Z"/><path d="m36 74 12-22 13 22M48 25v-9m0 0 15 6-15 7"/></svg>
+        </div>
       </div>
     </section>
 
@@ -56,7 +58,7 @@
         <span class="basecamp-state-icon" aria-hidden="true">🔒</span>
         <p class="eyebrow">Acceso privado</p>
         <h2>Entra en Base Camp</h2>
-        <p>Identifícate con la cuenta de Google autorizada para gestionar tus campañas.</p>
+        <p>Identifícate con la cuenta de Google autorizada para acceder a tus herramientas de montaña.</p>
         <button class="primary-button basecamp-login" type="button" data-basecamp-login>Acceder con Google</button>
         <p id="basecamp-auth-error" class="basecamp-error" aria-live="polite"></p>
       </div>
@@ -72,9 +74,9 @@
       <div id="basecamp-content" hidden>
         <header class="basecamp-welcome">
           <div>
-            <p class="eyebrow">Centro de operaciones</p>
-            <h2>Hola, <span data-user-name>Iñaki</span></h2>
-            <p>Tu espacio para convertir el archivo de montaña en planes reales.</p>
+            <p class="eyebrow" id="basecamp-daypart">Centro de operaciones</p>
+            <h2><span id="basecamp-greeting">Hola</span>, <span data-user-name>Iñaki</span></h2>
+            <p id="basecamp-intro">Todo preparado para tu próxima actividad.</p>
           </div>
           <div class="basecamp-account-card">
             <span data-user-role>Administrador</span>
@@ -82,48 +84,88 @@
           </div>
         </header>
 
-        <div class="basecamp-modules">
-          <a class="basecamp-module basecamp-module--active" href="gr11.html#campanas">
-            <span class="basecamp-module-icon" aria-hidden="true">🗓</span>
-            <span class="basecamp-module-copy">
-              <small>Disponible</small>
-              <strong>Campañas GR11</strong>
-              <span>Crear y revisar la planificación de tus próximas jornadas.</span>
-            </span>
-            <span aria-hidden="true">→</span>
-          </a>
-
-          <article class="basecamp-module is-coming">
-            <span class="basecamp-module-icon" aria-hidden="true">📖</span>
-            <span class="basecamp-module-copy">
-              <small>Próximamente</small>
-              <strong>Diario de expedición</strong>
-              <span>Notas, meteorología, incidencias y recuerdos de cada jornada.</span>
-            </span>
+        <section class="basecamp-dashboard" aria-label="Resumen de Base Camp">
+          <article class="basecamp-next" id="basecamp-next-campaign">
+            <div class="basecamp-section-heading">
+              <div>
+                <p class="eyebrow">Próxima expedición</p>
+                <h3>Sin campañas activas</h3>
+              </div>
+              <a class="primary-button" href="gr11.html?newCampaign=1#campanas">+ Nueva campaña</a>
+            </div>
+            <div class="basecamp-empty-campaign">
+              <div class="basecamp-route-symbol" aria-hidden="true">↗</div>
+              <p>Crea una campaña del GR11 y aquí aparecerán su recorrido, jornadas y totales.</p>
+            </div>
           </article>
 
-          <article class="basecamp-module is-coming">
-            <span class="basecamp-module-icon" aria-hidden="true">🎒</span>
-            <span class="basecamp-module-copy">
-              <small>Próximamente</small>
-              <strong>Material y reservas</strong>
-              <span>Preparación de mochila, alojamientos y control de reservas.</span>
-            </span>
-          </article>
+          <aside class="basecamp-overview" aria-labelledby="basecamp-overview-title">
+            <p class="eyebrow">Resumen</p>
+            <h3 id="basecamp-overview-title">Tu planificación</h3>
+            <div class="basecamp-overview-grid">
+              <div><strong id="basecamp-campaign-count">0</strong><span>campañas</span></div>
+              <div><strong id="basecamp-day-count">0</strong><span>jornadas</span></div>
+              <div><strong id="basecamp-distance">0 km</strong><span>planificados</span></div>
+              <div><strong id="basecamp-gain">0 m+</strong><span>ascenso</span></div>
+            </div>
+          </aside>
+        </section>
 
-          <article class="basecamp-module is-coming">
-            <span class="basecamp-module-icon" aria-hidden="true">⚙</span>
-            <span class="basecamp-module-copy">
-              <small>Próximamente</small>
-              <strong>Administración</strong>
-              <span>Gestión segura de datos, usuarios y contenidos del archivo.</span>
-            </span>
-          </article>
-        </div>
+        <section class="basecamp-area basecamp-campaigns-area" aria-labelledby="basecamp-campaigns-title">
+          <div class="basecamp-section-heading">
+            <div>
+              <p class="eyebrow">Planificación</p>
+              <h3 id="basecamp-campaigns-title">Todas mis campañas</h3>
+            </div>
+            <a class="secondary-button" href="gr11.html?newCampaign=1#campanas">+ Nueva campaña</a>
+          </div>
+          <p id="basecamp-campaign-list-empty" class="basecamp-campaign-list-empty">Todavía no hay campañas guardadas en este navegador.</p>
+          <div id="basecamp-campaign-list" class="basecamp-campaign-list" hidden></div>
+        </section>
+
+        <section class="basecamp-area" aria-labelledby="basecamp-tools-title">
+          <div class="basecamp-section-heading">
+            <div>
+              <p class="eyebrow">Preparar · vivir · recordar</p>
+              <h3 id="basecamp-tools-title">Herramientas</h3>
+            </div>
+          </div>
+          <div class="basecamp-modules">
+            <a class="basecamp-module basecamp-module--active" href="gr11.html#campanas">
+              <span class="basecamp-module-number">01</span>
+              <span class="basecamp-module-copy"><small>Disponible</small><strong>Campañas GR11</strong><span>Crear y revisar la planificación de tus próximas jornadas.</span></span>
+              <span aria-hidden="true">→</span>
+            </a>
+            <article class="basecamp-module is-coming">
+              <span class="basecamp-module-number">02</span>
+              <span class="basecamp-module-copy"><small>Próximamente</small><strong>Diario de expedición</strong><span>Notas, meteorología, incidencias y recuerdos de cada jornada.</span></span>
+            </article>
+            <article class="basecamp-module is-coming">
+              <span class="basecamp-module-number">03</span>
+              <span class="basecamp-module-copy"><small>Próximamente</small><strong>Material y reservas</strong><span>Mochila, alojamientos y control de preparativos.</span></span>
+            </article>
+            <article class="basecamp-module is-coming">
+              <span class="basecamp-module-number">04</span>
+              <span class="basecamp-module-copy"><small>Próximamente</small><strong>Administración</strong><span>Gestión segura de los datos y contenidos del archivo.</span></span>
+            </article>
+          </div>
+        </section>
+
+        <section class="basecamp-area" aria-labelledby="basecamp-quick-title">
+          <div class="basecamp-section-heading">
+            <div><p class="eyebrow">Archivo público</p><h3 id="basecamp-quick-title">Accesos rápidos</h3></div>
+          </div>
+          <nav class="basecamp-quick-links" aria-label="Accesos rápidos">
+            <a href="gr11.html"><span>GR11</span><small>Recorrido y etapas</small></a>
+            <a href="viajes.html"><span>Viajes</span><small>Archivo de expediciones</small></a>
+            <a href="cumbres.html"><span>Cumbres</span><small>Los tresmiles</small></a>
+            <a href="personas.html"><span>Personas</span><small>Compañeros de montaña</small></a>
+          </nav>
+        </section>
 
         <div class="basecamp-security-note">
-          <strong>Primera versión segura</strong>
-          <p>La sesión ya está protegida con Firebase. La escritura real de campañas seguirá desactivada hasta añadir validación del lado del servidor.</p>
+          <strong>Borradores locales</strong>
+          <p>Las campañas creadas en esta fase se conservan en este navegador. La escritura en Google Sheets seguirá desactivada hasta implantar el servicio seguro de guardado.</p>
         </div>
       </div>
     </section>

@@ -1,9 +1,11 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
+
 import {
   browserLocalPersistence,
   getAuth,
   setPersistence
 } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
+
 
 const firebaseConfig = {
   apiKey: "AIzaSyB71dn5F5cJd07NWRCVYlsX3VlfbB0FWmE",
@@ -15,9 +17,17 @@ const firebaseConfig = {
 };
 
 export const firebaseApp = initializeApp(firebaseConfig);
+
 export const auth = getAuth(firebaseApp);
 
+
 // Conserva la sesión al navegar entre las páginas estáticas.
-export const authReady = setPersistence(auth, browserLocalPersistence).catch((error) => {
-  console.error("No se pudo configurar la persistencia de Firebase:", error);
+export const authReady = setPersistence(
+  auth,
+  browserLocalPersistence
+).catch((error) => {
+  console.error(
+    "No se pudo configurar la persistencia de Firebase:",
+    error
+  );
 });

@@ -2,9 +2,42 @@ import { loadGr11RawData } from "./data.js";
 import { buildGr11Database } from "./db.js";
 import { escapeHtml, etapaUrl, gpxUrl, statusLabel, numberText } from "./gr11-shared.js";
 import { loadGPX, haversineKm } from "./gpx-engine.js";
+import { loadCampaigns, campaignStageStatusMap, normalizeCampaignStatus, campaignStatusLabel, campaignStatusClass } from "./campaign-store.js";
 
 const params = new URLSearchParams(location.search);
 const id = String(params.get("id") || "").toUpperCase();
+const requestedCampaignId = String(params.get("campana") || "");
+
+
+function campaignsForStage(stageId) {
+  return loadCampaigns()
+    .filter((campaign) => campaign.stages.some((stage) => stage.id === stageId))
+    .sort((a, b) => String(a.startDate).localeCompare(String(b.startDate)));
+}
+
+function campaignUrl(campaign) {
+  return `base-camp-campana.html?id=${encodeURIComponent(campaign.id)}`;
+}
+
+function renderCampaignContext(campaigns, activeCampaign) {
+  if (!campaigns.length) return "";
+  const completedCount = campaigns.filter((campaign) => normalizeCampaignStatus(campaign.status) === "completada").length;
+  const stageComplete = completedCount > 0;
+  const cards = campaigns.map((campaign) => {
+    const status = normalizeCampaignStatus(campaign.status);
+    return `
+    <a class="gr11-campaign-link ${campaignStatusClass(status)}${campaign.id === activeCampaign?.id ? " is-active" : ""}" href="${campaignUrl(campaign)}">
+      <span>${campaign.id === activeCampaign?.id ? "Campaña actual" : campaignStatusLabel(status)}</span>
+      <strong>${escapeHtml(campaign.name)}</strong>
+      <small>${escapeHtml(campaign.startDate || "Fecha por definir")} · ${campaign.stages.length} ${campaign.stages.length === 1 ? "jornada" : "jornadas"}</small>
+      <em>${campaign.id === activeCampaign?.id ? "Volver a la campaña" : "Ver campaña"} →</em>
+    </a>`;
+  }).join("");
+  const heading = stageComplete
+    ? (campaigns.length === 1 ? "Etapa completada" : `Completada en ${completedCount} campaña${completedCount === 1 ? "" : "s"}`)
+    : (campaigns.length === 1 ? "Etapa planificada" : `Planificada en ${campaigns.length} campañas`);
+  return `<section class="gr11-campaign-context ${stageComplete ? "is-complete" : ""}" aria-label="Campañas de esta etapa"><p class="eyebrow">Base Camp</p><h3>${heading}</h3>${cards}</section>`;
+}
 
 function external(url, label) {
   return url ? `<a class="primary-button compact" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">${label} ↗</a>` : "";
@@ -288,7 +321,7 @@ function setupFullscreenMap(map, fit, stage) {
   });
 }
 
-async function renderStageMap(stage, startRefuge = null, track = null) {
+async function renderStageMap(stage, startRefuge = null, track = null, displayStatus = stage.estado) {
   const element = document.querySelector("#gr11-stage-map");
   if (!element) return;
 
@@ -329,7 +362,7 @@ async function renderStageMap(stage, startRefuge = null, track = null) {
     }
 
     const group = window.L.featureGroup().addTo(map);
-    const color = stage.estado === "realizada" ? "#16834f" : stage.estado === "planificada" ? "#e6a100" : "#d83b32";
+    const color = displayStatus === "realizada" ? "#16834f" : displayStatus === "planificada" ? "#e6a100" : "#d83b32";
 
     const trackLines = [];
     segments.forEach((segment) => {
@@ -403,6 +436,8 @@ async function start() {
     const DB = buildGr11Database(await loadGr11RawData());
     const stage = DB.indexes.etapasById.get(id) || DB.etapas[0];
     if (!stage) throw new Error("No hay etapas disponibles.");
+    const localStageStatus = campaignStageStatusMap(loadCampaigns()).get(stage.id);
+    if (stage.estado !== "realizada" && localStageStatus) stage.estado = localStageStatus;
     const trackUrl = gpxUrl(stage.trackReferencia);
     if (!trackUrl) throw new Error("Esta etapa no tiene un GPX asociado.");
     const track = await loadGPX(trackUrl);
@@ -410,11 +445,14 @@ async function start() {
     const index = DB.etapas.findIndex((item) => item.id === stage.id);
     const previous = DB.etapas[index - 1];
     const next = DB.etapas[index + 1];
+    const stageCampaigns = campaignsForStage(stage.id);
+    const activeCampaign = stageCampaigns.find((campaign) => campaign.id === requestedCampaignId) || null;
+    const displayStatus = stage.estado === "realizada" ? "realizada" : (stageCampaigns.length ? "planificada" : stage.estado);
     root.innerHTML = `
       <section class="gr11-detail-hero">
         <div class="shell">
           <nav class="breadcrumbs" aria-label="Migas de pan"><a href="index.html">Inicio</a><span>/</span><a href="gr11.html">GR11</a><span>/</span><span>${escapeHtml(stage.id)}</span></nav>
-          <div class="gr11-detail-title-row"><div><p class="eyebrow">Etapa ${stage.numero}</p><h1>${escapeHtml(stage.nombre)}</h1><p>${escapeHtml(stage.inicio)} → ${escapeHtml(stage.final)}</p></div><span class="gr11-status ${stage.estado}">${statusLabel(stage.estado)}</span></div>
+          <div class="gr11-detail-title-row"><div><p class="eyebrow">Etapa ${stage.numero}</p><h1>${escapeHtml(stage.nombre)}</h1><p>${escapeHtml(stage.inicio)} → ${escapeHtml(stage.final)}</p></div><span class="gr11-status ${displayStatus}">${statusLabel(displayStatus)}</span></div>
           <div class="gr11-detail-stats">
             <div><strong>${formatMetric(track.distanceKm, 1, " km")}</strong><span>Distancia</span></div>
             <div><strong>${formatMetric(track.elevationGain, 0, " m+")}</strong><span>Ascenso</span></div>
@@ -447,12 +485,13 @@ async function start() {
           <section class="gr11-refuge-panel">${renderRefuge(stage.refugio)}</section>
         </article>
         <aside class="gr11-stage-nav" aria-label="Navegación entre etapas">
+          ${renderCampaignContext(stageCampaigns, activeCampaign)}
           <a class="${previous ? "" : "is-disabled"}" href="${previous ? etapaUrl(previous) : "#"}">← <span>Anterior</span>${previous ? `<strong>${escapeHtml(previous.nombre)}</strong>` : ""}</a>
           <a class="${next ? "" : "is-disabled"}" href="${next ? etapaUrl(next) : "#"}"><span>Siguiente</span> →${next ? `<strong>${escapeHtml(next.nombre)}</strong>` : ""}</a>
           <a href="gr11.html#etapas">Ver todas las etapas</a>
         </aside>
       </section>`;
-    await renderStageMap(stage, previous?.refugio ?? null, track);
+    await renderStageMap(stage, previous?.refugio ?? null, track, displayStatus);
   } catch (error) {
     root.innerHTML = `<section class="shell archive-section"><h1>No se pudo cargar la etapa</h1><p>${escapeHtml(error.message)}</p><a href="gr11.html">Volver a GR11</a></section>`;
   }

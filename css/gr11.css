@@ -383,3 +383,66 @@ body.gr11-campaign-open{overflow:hidden}
   .gr11-campaign-actions{bottom:-24px;margin:22px -18px -24px;padding:14px 18px}
   .gr11-campaign-actions .secondary-button,.gr11-campaign-actions .primary-button{padding:10px 12px}
 }
+
+/* Sprint 006.2 · campañas navegables */
+.gr11-campaign-card__link { display:inline-flex; margin-top:1rem; color:#b94712; font-weight:850; text-decoration:none; }
+.gr11-campaign-card__link:hover { text-decoration:underline; }
+.gr11-campaign-modal .is-hidden { display:none!important; }
+
+/* Sprint 006.2.1 · Contexto de campaña en la ficha de etapa */
+.gr11-campaign-context {
+  margin-bottom: 1rem;
+  padding: 1rem;
+  border: 1px solid rgba(211, 92, 17, .28);
+  background: #fff8f0;
+}
+
+.gr11-campaign-context h3 {
+  margin: .2rem 0 .8rem;
+  font-size: 1rem;
+}
+
+.gr11-campaign-link {
+  display: grid;
+  gap: .22rem;
+  margin-top: .65rem;
+  padding: .8rem;
+  color: inherit;
+  text-decoration: none;
+  border: 1px solid rgba(16, 45, 37, .16);
+  background: #fff;
+}
+
+.gr11-campaign-link:hover,
+.gr11-campaign-link:focus-visible,
+.gr11-campaign-link.is-active {
+  border-color: #d35c11;
+  box-shadow: 0 0 0 2px rgba(211, 92, 17, .1);
+}
+
+.gr11-campaign-link span,
+.gr11-campaign-link small {
+  color: #66736f;
+  font-size: .72rem;
+}
+
+.gr11-campaign-link strong {
+  font-size: .86rem;
+}
+
+.gr11-campaign-link em {
+  margin-top: .25rem;
+  color: #c64e08;
+  font-size: .76rem;
+  font-style: normal;
+  font-weight: 800;
+}
+
+.gr11-status.campaign-borrador { background:#e6e9e8; color:#4f5d58; }
+.gr11-status.campaign-planificada { background:#f7e8c4; color:#77530b; }
+.gr11-status.campaign-en-curso { background:#dcecf7; color:#235d85; }
+.gr11-status.campaign-completada { background:#dceee5; color:#195c3e; }
+.gr11-status.campaign-cancelada,.gr11-status.campaign-archivada { background:#eadfdd; color:#704039; }
+.gr11-campaign-context.is-complete { border-color:#8bbba1; }
+.gr11-campaign-link.completada { border-left:4px solid #1f6b48; }
+.gr11-campaign-link.en-curso { border-left:4px solid #2c6f9f; }

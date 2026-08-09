@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Ficha privada de campaña de Base Camp.">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Campaña · Base Camp</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="./css/styles.css">
+  <link rel="stylesheet" href="./css/base-camp.css">
+  <link rel="stylesheet" href="./css/base-camp-campana.css">
+</head>
+<body class="inner-page basecamp-page campaign-detail-page">
+  <header class="site-header">
+    <a class="brand" href="index.html" aria-label="Ir al inicio">
+      <span class="brand-logo" aria-hidden="true"><svg viewBox="0 0 64 42"><path d="M3 37 20 9l10 16 8-12 23 24H3Z" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linejoin="round"/><path d="m15 25 5-7 5 8m9-5 4-5 6 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></span>
+      <span>Los Tresmiles de Iñaki</span>
+    </a>
+    <nav aria-label="Navegación principal">
+      <a href="index.html">Inicio</a><a href="viajes.html">Viajes</a><a href="cumbres.html">Cumbres</a><a href="personas.html">Personas</a><a href="gr11.html">GR11</a><a class="active" href="base-camp.html">Base Camp</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="campaign-detail-hero">
+      <div class="shell">
+        <nav class="breadcrumbs" aria-label="Migas de pan"><a href="index.html">Inicio</a><span>/</span><a href="base-camp.html">Base Camp</a><span>/</span><span>Campaña</span></nav>
+        <p id="campaign-detail-eyebrow" class="eyebrow">Expedición planificada</p>
+        <div class="campaign-detail-hero-row"><div id="campaign-detail-heading"><h1>Cargando campaña…</h1></div><button id="campaign-edit-toggle" class="campaign-edit-hero-button" type="button" hidden>Editar campaña</button></div>
+      </div>
+    </section>
+
+    <section class="shell campaign-detail-shell">
+      <div id="campaign-detail-loading" class="basecamp-state"><span class="basecamp-spinner" aria-hidden="true"></span><p>Preparando la expedición…</p></div>
+      <div id="campaign-detail-locked" class="basecamp-state" hidden><span class="basecamp-state-icon">🔒</span><h2>Acceso privado</h2><p>Inicia sesión para consultar esta campaña.</p><button class="primary-button" type="button" data-basecamp-login>Acceder con Google</button></div>
+      <div id="campaign-detail-denied" class="basecamp-state" hidden><span class="basecamp-state-icon">⛔</span><h2>Cuenta sin autorización</h2><p>Esta cuenta no tiene acceso a Base Camp.</p><button class="secondary-button" type="button" data-basecamp-signout>Cerrar sesión</button></div>
+      <div id="campaign-detail-missing" class="basecamp-state" hidden><span class="basecamp-state-icon">🧭</span><h2>Campaña no encontrada</h2><p>Puede que el borrador pertenezca a otro navegador o haya sido eliminado.</p><a class="secondary-button" href="base-camp.html">Volver a Base Camp</a></div>
+
+      <div id="campaign-detail-content" hidden>
+        <section id="campaign-editor" class="campaign-editor" hidden aria-labelledby="campaign-editor-title">
+          <div class="campaign-detail-section-heading">
+            <div><p class="eyebrow">Gestión</p><h2 id="campaign-editor-title">Editar campaña</h2></div>
+            <button id="campaign-editor-close" class="secondary-button" type="button">Cerrar editor</button>
+          </div>
+          <form id="campaign-editor-form" class="campaign-editor-form">
+            <label><span>Nombre</span><input id="campaign-edit-name" name="name" type="text" maxlength="80" required></label>
+            <label><span>Fecha de inicio</span><input id="campaign-edit-date" name="startDate" type="date" required></label>
+            <label><span>Estado</span><select id="campaign-edit-status" name="status"><option value="borrador">Borrador</option><option value="planificada">Planificada</option><option value="en curso">En curso</option><option value="completada">Completada</option></select></label>
+            <label class="campaign-editor-form__notes"><span>Notas generales</span><textarea id="campaign-edit-notes" name="notes" rows="3" placeholder="Objetivo, logística o cualquier detalle de la campaña…"></textarea></label>
+            <div class="campaign-editor-form__actions"><button class="primary-button" type="submit">Guardar cambios</button></div>
+          </form>
+          <div class="campaign-stage-editor">
+            <div><p class="eyebrow">Itinerario</p><h3>Etapas de la campaña</h3><p class="campaign-editor-help">Cambia el orden, elimina jornadas o añade una etapa nueva. Las fechas y estadísticas se recalculan automáticamente.</p></div>
+            <div id="campaign-stage-editor-list" class="campaign-stage-editor-list"></div>
+            <div class="campaign-stage-add">
+              <label><span>Añadir etapa</span><select id="campaign-stage-add-select"></select></label>
+              <button id="campaign-stage-add-button" class="secondary-button" type="button">+ Añadir etapa</button>
+            </div>
+          </div>
+          <p id="campaign-editor-message" class="campaign-editor-message" aria-live="polite"></p>
+        
+        <section class="campaign-danger-zone" aria-labelledby="campaign-danger-title">
+  <div>
+    <p class="eyebrow">Zona sensible</p>
+    <h3 id="campaign-danger-title">Eliminar campaña</h3>
+    <p>
+      Elimina definitivamente esta campaña y sus jornadas de Base Camp.
+      Las etapas volverán a calcular su estado automáticamente.
+    </p>
+  </div>
+
+  <button
+    id="campaign-delete-button"
+    class="campaign-delete-button"
+    type="button"
+  >
+    Eliminar campaña
+  </button>
+</section>
+        </section>
+        <section id="campaign-detail-stats" class="campaign-detail-stats" aria-label="Resumen de la campaña"></section>
+        <section class="campaign-detail-map-section">
+          <div class="campaign-detail-section-heading"><div><p class="eyebrow">Recorrido</p><h2>Mapa de la campaña</h2></div><button id="campaign-map-reset" class="secondary-button" type="button">Centrar recorrido</button></div>
+          <div id="campaign-map" class="campaign-detail-map" aria-label="Mapa de la campaña"></div>
+        </section>
+        <section class="campaign-detail-itinerary">
+          <div class="campaign-detail-section-heading"><div><p class="eyebrow">Día a día</p><h2>Itinerario</h2></div><a class="secondary-button" href="gr11.html?newCampaign=1#campanas">+ Nueva campaña</a></div>
+          <div id="campaign-day-list" class="campaign-day-list"></div>
+        </section>
+        <aside class="basecamp-security-note">
+  <strong>Campaña sincronizada</strong>
+  <p>
+    Los cambios de esta campaña se guardan en Base Camp y se sincronizan
+    de forma segura mediante Firebase.
+  </p>
+</aside>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer shell"><p>Base Camp · Campaña privada.</p><a href="base-camp.html">Volver a Base Camp ↑</a></footer>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="./js/site-nav.js"></script>
+  <script type="module" src="./js/auth-ui.js"></script>
+  <script type="module" src="./js/base-camp-campana.js"></script>
+</body>
+</html>

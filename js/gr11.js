@@ -2,6 +2,7 @@ import { loadGr11RawData } from "./data.js";
 import { buildGr11Database } from "./db.js";
 import { escapeHtml, etapaUrl, gpxUrl, statusLabel, numberText } from "./gr11-shared.js";
 import { GPXEngine } from "./gpx-engine.js";
+import { addCampaign, loadCampaigns, observeCampaigns, campaignStageStatusMap, campaignStatusLabel, campaignStatusClass } from "./campaign-store.js";
 
 let DB;
 let map;
@@ -11,7 +12,7 @@ let endpointLayer;
 let fullRouteBounds;
 const layerByStageId = new Map();
 let selectedStageId = "";
-const draftCampaigns = [];
+let draftCampaigns = loadCampaigns();
 let campaignStep = 1;
 let campaignStageId = "";
 let campaignLastFocus = null;
@@ -62,6 +63,36 @@ function initMap() {
 
 function trackColor(status) {
   return { realizada: "#1f6b48", planificada: "#d79a22", pendiente: "#c4473d" }[status] ?? "#c4473d";
+}
+
+function syncCampaignStatuses() {
+  if (!DB) return;
+
+  const campaignStates = campaignStageStatusMap(draftCampaigns);
+
+  DB.etapas.forEach((stage) => {
+    if (!stage.baseEstado) stage.baseEstado = stage.estado;
+    const localState = campaignStates.get(stage.id);
+    if (stage.baseEstado === "realizada" || localState === "realizada") {
+      stage.estado = "realizada";
+    } else if (localState === "planificada") {
+      stage.estado = "planificada";
+    } else {
+      stage.estado = stage.baseEstado || "pendiente";
+    }
+  });
+
+  DB.stats.realizadas = DB.etapas.filter((stage) => stage.estado === "realizada").length;
+  DB.stats.planificadas = DB.etapas.filter((stage) => stage.estado === "planificada").length;
+  DB.stats.pendientes = DB.etapas.filter((stage) => stage.estado === "pendiente").length;
+}
+
+function refreshCampaignStatusView() {
+  if (!DB) return;
+  syncCampaignStatuses();
+  renderStats();
+  renderStages();
+  resetTrackStyles();
 }
 
 function defaultTrackStyle(stage) {
@@ -321,6 +352,10 @@ function durationText(totalMinutes) {
   return minutes ? `${hours} h ${minutes} min` : `${hours} h`;
 }
 
+function campaignUrl(campaign) {
+  return `base-camp-campana.html?id=${encodeURIComponent(campaign.id)}`;
+}
+
 function campaignSelection() {
   const startIndex = DB.etapas.findIndex((stage) => stage.id === campaignStageId);
   const requested = Math.max(1, Number(els.campaignDays.value) || 1);
@@ -338,17 +373,18 @@ function renderCampaigns() {
     els.campaignList.innerHTML = draftCampaigns.map((campaign) => `
       <article class="gr11-campaign-card">
         <div class="gr11-campaign-card__top">
-          <span class="gr11-status planificada">Planificada</span>
-          <small>Provisional · esta sesión</small>
+          <span class="gr11-status campaign-${campaignStatusClass(campaign.status)}">${escapeHtml(campaignStatusLabel(campaign.status))}</span>
+          <small>Borrador local · Base Camp</small>
         </div>
         <h3>${escapeHtml(campaign.name)}</h3>
-        <p>${formatCampaignDate(campaign.startDate)} · ${campaign.stages.length} ${campaign.stages.length === 1 ? "jornada" : "jornadas"}</p>
+        <p>${formatCampaignDate(localDateFromInput(campaign.startDate))} · ${campaign.stages.length} ${campaign.stages.length === 1 ? "jornada" : "jornadas"}</p>
         <div class="gr11-campaign-card__route"><strong>${escapeHtml(campaign.stages[0].inicio)}</strong><span>→</span><strong>${escapeHtml(campaign.stages.at(-1).final)}</strong></div>
         <div class="gr11-campaign-card__facts">
           <span><strong>${campaign.totals.distance.toFixed(1)} km</strong> distancia</span>
           <span><strong>${Math.round(campaign.totals.gain)} m+</strong> ascenso</span>
           <span><strong>${durationText(campaign.totals.minutes)}</strong> tiempo</span>
         </div>
+        <a class="gr11-campaign-card__link" href="${campaignUrl(campaign)}">Ver campaña →</a>
       </article>`).join("");
   }
   els.campaignList.querySelectorAll("[data-open-campaign]").forEach((button) => button.addEventListener("click", openCampaignWizard));
@@ -395,7 +431,10 @@ function showCampaignStep(step) {
   });
   els.campaignBack.hidden = step === 1;
   els.campaignNext.hidden = step === 5;
+  els.campaignNext.disabled = step === 5;
+  els.campaignNext.classList.toggle("is-hidden", step === 5);
   els.campaignCreate.hidden = step !== 5;
+  els.campaignCreate.classList.toggle("is-hidden", step !== 5);
 
   if (step === 3) renderCampaignStageOptions();
   if (step === 4) validateCampaignDays();
@@ -472,6 +511,7 @@ async function renderCampaignPreview() {
   const stages = campaignSelection();
   const startDate = localDateFromInput(els.campaignDate.value);
   els.campaignPreviewLoading.hidden = false;
+  els.campaignCreate.disabled = true;
   els.campaignPreview.innerHTML = `<p class="gr11-campaign-preview-placeholder">Preparando jornadas y leyendo los GPX…</p>`;
   const metrics = await Promise.all(stages.map(stageMetrics));
   if (token !== campaignPreviewToken) return;
@@ -485,6 +525,7 @@ async function renderCampaignPreview() {
   }, { distance: 0, gain: 0, loss: 0, minutes: 0 });
 
   els.campaignPreviewLoading.hidden = true;
+  els.campaignCreate.disabled = false;
   els.campaignPreview.innerHTML = `
     <div class="gr11-campaign-preview-summary">
       <div><span>Campaña</span><strong>${escapeHtml(els.campaignName.value.trim())}</strong></div>
@@ -551,14 +592,16 @@ function bindCampaignPlanner() {
     event.preventDefault();
     const stages = campaignSelection();
     const totals = JSON.parse(els.campaignPreview.dataset.totals || '{"distance":0,"gain":0,"loss":0,"minutes":0}');
-    draftCampaigns.push({
-      id: `TMP${String(draftCampaigns.length + 1).padStart(3, "0")}`,
+    addCampaign({
       name: els.campaignName.value.trim(),
-      startDate: localDateFromInput(els.campaignDate.value),
+      startDate: els.campaignDate.value,
+      status: "planificada",
       stages,
       totals
     });
+    draftCampaigns = loadCampaigns();
     renderCampaigns();
+    refreshCampaignStatusView();
     closeCampaignWizard();
     document.querySelector("#campanas")?.scrollIntoView({ behavior: "smooth", block: "start" });
   });
@@ -590,6 +633,7 @@ async function start() {
     initMap();
     const raw = await loadGr11RawData();
     DB = buildGr11Database(raw);
+    syncCampaignStatuses();
     renderStats();
     populateFilters();
     renderRefuges();
@@ -598,6 +642,16 @@ async function start() {
     renderCampaigns();
     bind();
     bindCampaignPlanner();
+    observeCampaigns((campaigns) => {
+      draftCampaigns = campaigns;
+      renderCampaigns();
+      refreshCampaignStatusView();
+    });
+
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("newCampaign") === "1") {
+      requestAnimationFrame(() => openCampaignWizard());
+    }
 
     if (!tracksLoaded) {
       els.mapMessage.querySelector("span").textContent = "No se ha podido cargar ningún GPX.";
