@@ -127,3 +127,68 @@
     width: 100%;
   }
 }
+
+/* =====================================================
+   AÑADIR ETAPA · maquetación definitiva
+   ===================================================== */
+
+.campaign-stage-add {
+  display: flex;
+  align-items: flex-end;
+  gap: .8rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #ddd8ce;
+}
+
+.campaign-stage-add__field {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+#campaign-stage-add-select {
+  width: 100%;
+}
+
+#campaign-stage-add-button {
+  display: inline-flex !important;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  min-width: 145px;
+  min-height: 46px;
+  margin: 0;
+  padding: .8rem 1rem;
+  border: 1px solid #c9c6bd;
+  background: #fff;
+  color: #17372f;
+  font: inherit;
+  font-weight: 800;
+  line-height: 1;
+  white-space: nowrap;
+  visibility: visible !important;
+  opacity: 1 !important;
+  cursor: pointer;
+}
+
+#campaign-stage-add-button:hover:not(:disabled) {
+  border-color: #d35413;
+  color: #b94712;
+}
+
+#campaign-stage-add-button:disabled {
+  opacity: .45 !important;
+  cursor: not-allowed;
+}
+
+@media (max-width: 800px) {
+  .campaign-stage-add {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  #campaign-stage-add-button {
+    width: 100%;
+  }
+}
+

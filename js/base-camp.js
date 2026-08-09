@@ -22,7 +22,19 @@ function showOnly(target) {
 }
 
 function firstName(user) {
-  return String(user?.displayName || "Iñaki").trim().split(/\s+/)[0] || "Iñaki";
+  const email = String(user?.email || "").trim().toLowerCase();
+  const rawName = String(user?.displayName || "").trim();
+  const first = rawName.split(/\s+/)[0] || "";
+
+  // La cuenta de administrador llega desde Google con la ñ dañada
+  // en algunos navegadores/dispositivos. Forzamos aquí el nombre correcto.
+  if (email === "iruizm@ekonomistak.eus") {
+    return "Iñaki";
+  }
+
+  // Corrección defensiva por si el carácter de reemplazo aparece
+  // en otros nombres recibidos desde el proveedor.
+  return (first || "Iñaki").replaceAll("�", "ñ");
 }
 
 function fillUser(user) {

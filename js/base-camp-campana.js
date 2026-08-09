@@ -37,6 +37,8 @@ const ui = {
   editor: document.querySelector("#campaign-editor"),
   editorClose: document.querySelector("#campaign-editor-close"),
   editorForm: document.querySelector("#campaign-editor-form"),
+  saveButton: document.querySelector('#campaign-editor-form button[type="submit"]'),
+  saveMessage: document.querySelector("#campaign-save-message"),
 
   editName: document.querySelector("#campaign-edit-name"),
   editDate: document.querySelector("#campaign-edit-date"),
@@ -550,6 +552,17 @@ function setEditorMessage(
     type;
 }
 
+function setSaveMessage(
+  message,
+  type = "ok"
+) {
+  ui.saveMessage.textContent =
+    message;
+
+  ui.saveMessage.dataset.type =
+    type;
+}
+
 
 function fillGeneralEditor() {
   ui.editName.value =
@@ -882,11 +895,15 @@ ui.editorForm.addEventListener(
   async (event) => {
     event.preventDefault();
 
+    if (ui.saveButton?.disabled) {
+      return;
+    }
+
     const name =
       ui.editName.value.trim();
 
     if (!name) {
-      setEditorMessage(
+      setSaveMessage(
         "Escribe un nombre para la campaña.",
         "error"
       );
@@ -894,36 +911,63 @@ ui.editorForm.addEventListener(
       return;
     }
 
-    const updated =
-      updateCampaign(
-        currentCampaign.id,
-        {
-          name,
-          startDate:
-            ui.editDate.value,
-          status:
-            ui.editStatus.value,
-          notes:
-            ui.editNotes.value.trim()
-        }
-      );
+    const originalButtonText =
+      ui.saveButton?.textContent ||
+      "Guardar cambios";
 
-    if (!updated) {
-      setEditorMessage(
+    if (ui.saveButton) {
+      ui.saveButton.disabled = true;
+      ui.saveButton.textContent =
+        "Guardando…";
+    }
+
+    setSaveMessage(
+      "Guardando cambios…"
+    );
+
+    try {
+      const updated =
+        updateCampaign(
+          currentCampaign.id,
+          {
+            name,
+            startDate:
+              ui.editDate.value,
+            status:
+              ui.editStatus.value,
+            notes:
+              ui.editNotes.value.trim()
+          }
+        );
+
+      if (!updated) {
+        throw new Error(
+          "No se pudieron guardar los cambios."
+        );
+      }
+
+      currentCampaign = updated;
+
+      await refreshCampaign();
+
+      setSaveMessage(
+        "✓ Cambios guardados"
+      );
+    } catch (error) {
+      console.error(error);
+
+      setSaveMessage(
+        error.message ||
         "No se pudieron guardar los cambios.",
         "error"
       );
-
-      return;
+    } finally {
+      if (ui.saveButton) {
+        ui.saveButton.disabled = false;
+        ui.saveButton.textContent =
+          originalButtonText;
+      }
     }
-
-    currentCampaign = updated;
-
-    await refreshCampaign();
-
-    setEditorMessage(
-      "Información general actualizada."
-    );
   }
 );
 
