@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Preparación privada de material de Base Camp.">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Material · Base Camp</title>
+  <link rel="stylesheet" href="./css/styles.css">
+  <link rel="stylesheet" href="./css/base-camp.css">
+  <link rel="stylesheet" href="./css/base-camp-material.css">
+</head>
+<body class="inner-page basecamp-page material-page">
+<header class="site-header">
+  <a class="brand" href="index.html" aria-label="Ir al inicio"><span class="brand-logo" aria-hidden="true"><svg viewBox="0 0 64 42"><path d="M3 37 20 9l10 16 8-12 23 24H3Z" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linejoin="round"/><path d="m15 25 5-7 5 8m9-5 4-5 6 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></span><span>Los Tresmiles de Iñaki</span></a>
+  <nav aria-label="Navegación principal"><a href="index.html">Inicio</a><a href="viajes.html">Viajes</a><a href="cumbres.html">Cumbres</a><a href="personas.html">Personas</a><a href="gr11.html">GR11</a><a class="active" href="base-camp.html">Base Camp</a></nav>
+</header>
+<main>
+  <section class="material-hero"><div class="shell"><nav class="breadcrumbs" aria-label="Migas de pan"><a href="index.html">Inicio</a><span>/</span><a href="base-camp.html">Base Camp</a><span>/</span><span>Material</span></nav><p class="eyebrow">Preparativos</p><h1>Material</h1><p>Decide qué llevas. Después, mete cada cosa en la mochila.</p></div></section>
+  <section class="shell material-shell">
+    <div id="material-loading" class="basecamp-state"><span class="basecamp-spinner" aria-hidden="true"></span><p>Comprobando la sesión…</p></div>
+    <div id="material-locked" class="basecamp-state" hidden><span class="basecamp-state-icon">🔒</span><h2>Acceso privado</h2><p>Inicia sesión para preparar tu material.</p><button class="primary-button" type="button" data-basecamp-login>Acceder con Google</button></div>
+    <div id="material-denied" class="basecamp-state" hidden><span class="basecamp-state-icon">⛔</span><h2>Cuenta sin autorización</h2><p>Esta cuenta no tiene acceso a Base Camp.</p><button class="secondary-button" type="button" data-basecamp-signout>Cerrar sesión</button></div>
+
+    <div id="material-content" hidden>
+      <section class="material-start" aria-labelledby="material-start-title">
+        <div><p class="eyebrow">Elegir uso</p><h2 id="material-start-title">¿Qué material quieres preparar?</h2></div>
+        <div class="material-mode-cards">
+          <button class="material-mode-card is-active" type="button" data-material-context="generic"><span>01</span><strong>Material genérico</strong><small>Para cualquier salida de montaña.</small></button>
+          <button class="material-mode-card" type="button" data-material-context="gr11"><span>02</span><strong>Material GR11</strong><small>Asociado a una campaña ya creada.</small></button>
+          <button class="material-mode-card" type="button" data-material-context="master"><span>03</span><strong>Mi material</strong><small>Edita tu lista maestra.</small></button>
+        </div>
+      </section>
+
+      <section id="material-gr11-picker" class="material-panel material-gr11-picker" hidden>
+        <div><p class="eyebrow">Campaña GR11</p><h2>Elige la campaña</h2></div>
+        <label><span>Campaña</span><select id="material-campaign-select"><option value="">Selecciona una campaña…</option></select></label>
+        <p id="material-campaign-empty" class="material-help" hidden>No hay campañas disponibles todavía.</p>
+      </section>
+
+      <section id="material-workspace" class="material-panel" aria-labelledby="material-workspace-title">
+        <div class="material-workspace-head">
+          <div><p id="material-workspace-eyebrow" class="eyebrow">Material genérico</p><h2 id="material-workspace-title">Seleccionar material</h2><p id="material-workspace-copy">Marca lo que quieres llevar y ajusta las cantidades.</p></div>
+          <div class="material-progress"><strong id="material-progress-value">0 / 0</strong><span id="material-progress-label">seleccionados</span></div>
+        </div>
+        <div class="material-toolbar">
+          <button id="material-back-selection" class="secondary-button" type="button" hidden>← Volver a selección</button>
+          <label id="material-pending-wrap" class="material-pending" hidden><input id="material-only-pending" type="checkbox"> Mostrar solo pendientes</label>
+          <button id="material-clear" class="material-text-button" type="button">Limpiar selección</button>
+        </div>
+        <div id="material-categories" class="material-categories"></div>
+        <div id="material-next-wrap" class="material-next-wrap">
+          <button id="material-go-pack" class="material-next-button" type="button">Ir a modo mochila <span aria-hidden="true">→</span></button>
+          <p id="material-next-help">Selecciona primero el material que quieres llevar.</p>
+        </div>
+        <p id="material-message" class="material-message" aria-live="polite"></p>
+      </section>
+
+      <section id="material-master" class="material-panel" hidden aria-labelledby="material-master-title">
+        <div class="material-workspace-head"><div><p class="eyebrow">Biblioteca permanente</p><h2 id="material-master-title">Mi material</h2><p>Añade o elimina elementos. Esta lista será la base de todas tus preparaciones.</p></div><div class="material-progress"><strong id="material-master-count">0</strong><span>elementos</span></div></div>
+        <form id="material-add-form" class="material-add-form"><label><span>Material</span><input id="material-add-name" type="text" maxlength="60" placeholder="Ej. gorro" required></label><label><span>Categoría</span><select id="material-add-category"></select></label><label class="material-quantity-check"><input id="material-add-quantity" type="checkbox"> Usar cantidad</label><button class="primary-button" type="submit">+ Añadir</button></form>
+        <div id="material-master-list" class="material-master-list"></div>
+        <button id="material-master-reset" class="material-text-button" type="button">Restaurar lista maestra inicial</button>
+      </section>
+
+      <aside class="basecamp-security-note"><strong>Guardado en este navegador</strong><p>La lista de material y el estado de las mochilas se conservan localmente. No se envían al archivo público ni a Google Sheets.</p></aside>
+    </div>
+  </section>
+</main>
+<footer class="site-footer shell"><p>Base Camp · Material privado.</p><a href="base-camp.html">Volver a Base Camp ↑</a></footer>
+<script src="./js/site-nav.js"></script><script type="module" src="./js/auth-ui.js"></script><script type="module" src="./js/base-camp-material.js"></script>
+</body></html>
