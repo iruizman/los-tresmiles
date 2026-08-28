@@ -18,6 +18,34 @@ import { buildGr11Database } from "./db.js";
 import { calculateCampaign } from "./campaign-metrics.js";
 import { etapaUrl } from "./gr11-shared.js";
 
+const DIARY_STORAGE_KEY = "los-tresmiles-basecamp-diario-v1";
+
+function readDiary() {
+  try {
+    return JSON.parse(localStorage.getItem(DIARY_STORAGE_KEY) || "{}") || {};
+  } catch {
+    return {};
+  }
+}
+
+function diaryEntryKey(campaignId, stageId, index) {
+  return `${campaignId}::${stageId || index}`;
+}
+
+function getDiaryEntry(campaignId, stageId, index) {
+  return readDiary()[diaryEntryKey(campaignId, stageId, index)] || { text: "", photosUrl: "" };
+}
+
+function validExternalUrl(value) {
+  if (!value) return false;
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" || url.protocol === "http:";
+  } catch {
+    return false;
+  }
+}
+
 
 const ui = {
   loading: document.querySelector("#campaign-detail-loading"),
@@ -301,6 +329,11 @@ function renderDays(campaign, stages, metrics) {
   ui.days.innerHTML = stages
     .map((stage, index) => {
       const refuge = stage.refugio;
+      const diary = getDiaryEntry(campaign.id, stage.id, index);
+      const diaryText = String(diary.text || "").trim();
+      const photosUrl = String(diary.photosUrl || "").trim();
+      const hasDiary = Boolean(diaryText);
+      const hasPhotos = Boolean(photosUrl);
 
       return `
         <article class="campaign-day-card">
@@ -348,12 +381,19 @@ function renderDays(campaign, stages, metrics) {
               </span>
             </div>
 
-            <a
-              class="campaign-day-card__link"
-              href="${campaignStageUrl(stage, campaign.id)}"
-            >
-              Ver ficha de etapa →
-            </a>
+            <div class="campaign-day-card__links">
+              <a
+                class="campaign-day-card__link"
+                href="${campaignStageUrl(stage, campaign.id)}"
+              >
+                Ver ficha de etapa →
+              </a>
+              ${
+                hasDiary || hasPhotos
+                  ? `<span class="campaign-day-card__diary-status">${hasDiary ? "✓ Diario" : "— Diario"} · ${hasPhotos ? "✓ Fotos" : "— Fotos"}</span>`
+                  : ""
+              }
+            </div>
 
           </div>
 
@@ -393,6 +433,24 @@ function renderDays(campaign, stages, metrics) {
             }
 
           </div>
+
+          ${
+            hasDiary || hasPhotos
+              ? `
+                <section class="campaign-day-card__diary" aria-label="Diario de la etapa">
+                  <div class="campaign-day-card__diary-heading">
+                    <span>Diario de la etapa</span>
+                    ${
+                      hasPhotos && validExternalUrl(photosUrl)
+                        ? `<a href="${escapeHtml(photosUrl)}" target="_blank" rel="noopener noreferrer">Ver fotos ↗</a>`
+                        : ""
+                    }
+                  </div>
+                  ${hasDiary ? `<p>${escapeHtml(diaryText)}</p>` : `<p class="campaign-day-card__diary-empty">Esta etapa tiene fotos, pero todavía no tiene texto de diario.</p>`}
+                </section>
+              `
+              : ""
+          }
 
         </article>
       `;

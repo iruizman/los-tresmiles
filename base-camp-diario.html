@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Diario privado de expedición de Base Camp.">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Diario de expedición · Base Camp</title>
+  <link rel="stylesheet" href="./css/styles.css">
+  <link rel="stylesheet" href="./css/base-camp.css">
+  <link rel="stylesheet" href="./css/base-camp-diario.css">
+</head>
+<body class="inner-page basecamp-page expedition-diary-page">
+  <header class="site-header">
+    <a class="brand" href="index.html" aria-label="Ir al inicio"><span class="brand-logo" aria-hidden="true"><svg viewBox="0 0 64 42"><path d="M3 37 20 9l10 16 8-12 23 24H3Z" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linejoin="round"/><path d="m15 25 5-7 5 8m9-5 4-5 6 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></span><span>Los Tresmiles de Iñaki</span></a>
+    <nav aria-label="Navegación principal"><a href="index.html">Inicio</a><a href="viajes.html">Viajes</a><a href="cumbres.html">Cumbres</a><a href="personas.html">Personas</a><a href="gr11.html">GR11</a><a class="active" href="base-camp.html">Base Camp</a></nav>
+  </header>
+
+  <main>
+    <section class="diary-hero"><div class="shell"><nav class="breadcrumbs" aria-label="Migas de pan"><a href="index.html">Inicio</a><span>/</span><a href="base-camp.html">Base Camp</a><span>/</span><span>Diario de expedición</span></nav><p class="eyebrow">Vivir · recordar</p><h1>Diario de expedición</h1><p>Guarda el relato y las fotos de cada jornada de tus campañas GR11.</p></div></section>
+
+    <section class="shell diary-shell">
+      <div id="diary-loading" class="basecamp-state"><span class="basecamp-spinner" aria-hidden="true"></span><p>Preparando el diario…</p></div>
+      <div id="diary-locked" class="basecamp-state" hidden><span class="basecamp-state-icon">🔒</span><h2>Acceso privado</h2><p>Inicia sesión para consultar tu diario.</p><button class="primary-button" type="button" data-basecamp-login>Acceder con Google</button></div>
+      <div id="diary-denied" class="basecamp-state" hidden><span class="basecamp-state-icon">⛔</span><h2>Cuenta sin autorización</h2><p>Esta cuenta no tiene acceso a Base Camp.</p><button class="secondary-button" type="button" data-basecamp-signout>Cerrar sesión</button></div>
+
+      <div id="diary-content" hidden>
+        <section class="diary-campaign-picker">
+          <div><p class="eyebrow">Campaña</p><h2>Elige una expedición</h2></div>
+          <label for="diary-campaign-select">Campaña GR11<select id="diary-campaign-select"><option value="">Selecciona una campaña…</option></select></label>
+        </section>
+
+        <section id="diary-empty" class="diary-empty" hidden><h2>Todavía no hay campañas</h2><p>Crea primero una campaña GR11 y después podrás escribir su diario jornada a jornada.</p><a class="primary-button" href="gr11.html?newCampaign=1#campanas">+ Nueva campaña</a></section>
+
+        <section id="diary-campaign" hidden>
+          <header class="diary-campaign-header"><div><p class="eyebrow">Diario de campaña</p><h2 id="diary-campaign-name"></h2><p id="diary-campaign-route"></p></div><div class="diary-progress"><strong id="diary-progress-value">0 / 0</strong><span>etapas con diario</span></div></header>
+          <div id="diary-stage-list" class="diary-stage-list"></div>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer shell"><p>Base Camp · Área privada de Los Tresmiles de Iñaki.</p><a href="base-camp.html">Volver a Base Camp ↑</a></footer>
+  <script src="./js/site-nav.js"></script>
+  <script type="module" src="./js/auth-ui.js"></script>
+  <script type="module" src="./js/base-camp-diario.js"></script>
+</body>
+</html>

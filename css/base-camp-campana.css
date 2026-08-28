@@ -192,3 +192,16 @@
   }
 }
 
+
+
+/* Diario de expedición integrado en las jornadas */
+.campaign-day-card__links { display:flex; align-items:center; flex-wrap:wrap; gap:.65rem 1rem; margin-top:.9rem; }
+.campaign-day-card__links .campaign-day-card__link { margin-top:0; }
+.campaign-day-card__diary-status { color:#2e5d50; font-size:.76rem; font-weight:800; }
+.campaign-day-card__diary { grid-column:1/-1; margin-top:.15rem; padding:1rem 1.1rem; border-top:1px solid #e0ddd5; background:#fbfaf7; }
+.campaign-day-card__diary-heading { display:flex; align-items:center; justify-content:space-between; gap:1rem; margin-bottom:.55rem; }
+.campaign-day-card__diary-heading span { color:#17372f; font-size:.72rem; font-weight:900; text-transform:uppercase; letter-spacing:.08em; }
+.campaign-day-card__diary-heading a { color:#b94712; font-size:.82rem; font-weight:850; text-decoration:none; }
+.campaign-day-card__diary p { margin:0; color:#46544f; line-height:1.6; white-space:pre-wrap; }
+.campaign-day-card__diary-empty { color:#7a827f !important; font-style:italic; }
+@media(max-width:900px){.campaign-day-card__diary{grid-column:auto}.campaign-day-card__diary-heading{align-items:flex-start;flex-direction:column;gap:.4rem}}
