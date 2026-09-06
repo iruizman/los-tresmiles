@@ -9,7 +9,9 @@ const TRAVEL_MEDIA = {
   V009: { file: 'v009-portada.jpg', cardPosition: '50% 50%', heroPosition: '50% 50%' },
   V010: { file: 'v010-portada.jpg', cardPosition: '50% 50%', heroPosition: '50% 50%' },
   V011: { file: 'v011-portada.jpg', cardPosition: '50% 50%', heroPosition: '50% 50%' },
-  V012: { file: 'v012-portada.jpg', cardPosition: '50% 50%', heroPosition: '50% 50%' }
+  V012: { file: 'v012-portada.jpg', cardPosition: '50% 50%', heroPosition: '50% 50%' },
+  V013: { file: 'v013-portada.jpg', cardPosition: '50% 50%', heroPosition: '50% 50%' },
+  
 };
 
 export function travelMedia(tripOrId) {
