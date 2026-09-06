@@ -91,7 +91,7 @@ const PERSON_MEDIA = {
     memories: 3
       },
   P015: {
-    folder: 'p015-sonia-palas',
+    folder: 'p015-sonia-martinez',
     prefix: 'p015',
     cardPosition: '50% 30%',
     heroPosition: '50% 27%',
