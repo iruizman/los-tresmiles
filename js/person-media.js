@@ -68,7 +68,36 @@ const PERSON_MEDIA = {
     cardPosition: '50% 30%',
     heroPosition: '50% 27%',
     memories: 3
+      },
+  P012: {
+    folder: 'p012-aida-ruiz',
+    prefix: 'p012',
+    cardPosition: '50% 30%',
+    heroPosition: '50% 27%',
+    memories: 3
+      },
+  P013: {
+    folder: 'p013-mikel-ruiz',
+    prefix: 'p013',
+    cardPosition: '50% 30%',
+    heroPosition: '50% 27%',
+    memories: 3
+      },
+  P014: {
+    folder: 'p014-victor-vazquez',
+    prefix: 'p014',
+    cardPosition: '50% 30%',
+    heroPosition: '50% 27%',
+    memories: 3
+      },
+  P015: {
+    folder: 'p015-sonia-palas',
+    prefix: 'p015',
+    cardPosition: '50% 30%',
+    heroPosition: '50% 27%',
+    memories: 3
 }
+
 
 };
 
